@@ -29,7 +29,7 @@ public class BankController {
     }
 
     @PostMapping(value="/users/register",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<User>> registerUser(@RequestBody User user){
+    public ResponseEntity<ApiResponse<User>> registerUser(@RequestBody UserDto user){
         logger.info("Registering User in Bank of Soumya");
         ApiResponse<User> saveduser = userService.register(user);
         logger.info("Registered User in Bank of Soumya successfully");
@@ -37,9 +37,9 @@ public class BankController {
     }
 
     @PostMapping("/accounts/create")
-    public ResponseEntity<ApiResponse<Account>> registerUserAccount(@RequestBody Account account){
+    public ResponseEntity<ApiResponse<AccountDto>> registerUserAccount(@RequestBody AccountDto account){
         logger.info("Registering User Bank Account in Bank of Soumya");
-        ApiResponse<Account> savedAccount = accountService.register(account);
+        ApiResponse<AccountDto> savedAccount = accountService.register(account);
         logger.info("Registered User Bank Account in Bank of Soumya successfully");
         return new ResponseEntity<>(savedAccount,HttpStatus.CREATED);
     }

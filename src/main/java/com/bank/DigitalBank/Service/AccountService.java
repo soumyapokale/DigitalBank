@@ -3,10 +3,7 @@ package com.bank.DigitalBank.Service;
 
 import com.bank.DigitalBank.DTO.TransferResponse;
 import com.bank.DigitalBank.Entity.Account;
-import com.bank.DigitalBank.dto.ApiResponse;
-import com.bank.DigitalBank.dto.BalanceDTO;
-import com.bank.DigitalBank.dto.DepositResponseDTO;
-import com.bank.DigitalBank.dto.WithdrawResponseDTO;
+import com.bank.DigitalBank.dto.*;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -14,7 +11,7 @@ import java.math.BigDecimal;
 @Service
 public interface AccountService {
 
-    ApiResponse<Account> register(Account account);
+    ApiResponse<AccountDto> register(AccountDto account);
 
     ApiResponse<DepositResponseDTO> depositCash(String accountNumber, BigDecimal amount);
 

@@ -1,10 +1,12 @@
 package com.bank.DigitalBank.Service.Impl;
 
-import com.bank.DigitalBank.Controller.BankController;
+
 import com.bank.DigitalBank.Entity.User;
 import com.bank.DigitalBank.Repository.UserRepo;
 import com.bank.DigitalBank.Service.UserService;
+import com.bank.DigitalBank.config.ModelMapperConfig;
 import com.bank.DigitalBank.dto.ApiResponse;
+import com.bank.DigitalBank.dto.UserDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,17 +16,19 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements UserService {
 
     private final PasswordEncoder passwordEncoder;
-    private UserRepo userRepo;
+    private final UserRepo userRepo;
 
-    public UserServiceImpl(PasswordEncoder passwordEncoder, UserRepo userRepo) {
+    private final ModelMapperConfig modelMapperConfig;
+    public UserServiceImpl(PasswordEncoder passwordEncoder, UserRepo userRepo, ModelMapperConfig modelMapperConfig) {
         this.passwordEncoder = passwordEncoder;
         this.userRepo = userRepo;
+        this.modelMapperConfig = modelMapperConfig;
     }
 
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @Override
-    public ApiResponse<User> register(User user) {
+    public ApiResponse<User> register(UserDto user) {
 
 
         if (user.getRoles() == null || user.getRoles().isEmpty()) {
@@ -33,8 +37,11 @@ public class UserServiceImpl implements UserService {
 
         logger.info("Encoding Password");
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        User saved = userRepo.save(user);
-        ApiResponse<User> savedUser = new ApiResponse(true,"User registered successfully",saved);
+
+        User registerUser = modelMapperConfig.modelMapper().map(user,User.class);
+        User saved = userRepo.save(registerUser);
+
+        ApiResponse<User> savedUser = new ApiResponse(true,"User registered successfully",modelMapperConfig.modelMapper().map(saved,UserDto.class));
 
         logger.info("User Registered: "+ user.getName());
         return savedUser;

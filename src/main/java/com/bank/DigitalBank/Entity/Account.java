@@ -23,7 +23,7 @@ public class Account {
 
 
     @Column(unique = true, length = 12, name = "accountNumber")
-    private String accountNumber = generateAccountNumberWithPrefix();
+    private String accountNumber ;
 
     @Column(nullable = false)
     @ColumnDefault(value = "0")
@@ -36,18 +36,7 @@ public class Account {
     private User user;
 
 
-    private String generateAccountNumberWithPrefix() {
-        String prefix = "BOK"; // 3 characters
-        int digitsNeeded = 12 - prefix.length(); // 9 digits
-        Random random = new Random();
-        StringBuilder sb = new StringBuilder(prefix);
 
-        for (int i = 0; i < digitsNeeded; i++) {
-            sb.append(random.nextInt(10));
-        }
-
-        return sb.toString(); // e.g., "BOK928374652"
-    }
 
     public Long getId() {
         return id;
