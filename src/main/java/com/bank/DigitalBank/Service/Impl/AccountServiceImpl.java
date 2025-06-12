@@ -81,7 +81,7 @@ ApiResponse accountresponse = new ApiResponse<>(true,"Account registered success
 
     @Transactional
     @Override
-    public WithdrawResponseDTO withdrawCash(String accountNumber, BigDecimal amount) {
+    public ApiResponse<WithdrawResponseDTO> withdrawCash(String accountNumber, BigDecimal amount) {
         Account account = accountRepo.findByAccountNumber(accountNumber);
         BigDecimal newBalance = account.getBalance().subtract(amount);
         account.setBalance(newBalance);
@@ -97,16 +97,18 @@ ApiResponse accountresponse = new ApiResponse<>(true,"Account registered success
                 null                          // transactionDate (auto-set by @CreationTimestamp)
         );
         transactionRepo.save(transaction);
-        return new WithdrawResponseDTO(
+
+        WithdrawResponseDTO withdrawResponseDTO = new WithdrawResponseDTO(
                 "SUCCESS",
-                "Deposit successful",
+                "Withdraw successful",
                 account.getAccountNumber(),
                 account.getBalance());
+        return new ApiResponse<>(true,"Withdrawal was successfull",withdrawResponseDTO);
 
     }
 
     @Override
-    public TransferResponse transferAmount(String fromAccount, String toAccount, BigDecimal amount) {
+    public ApiResponse<TransferResponse> transferAmount(String fromAccount, String toAccount, BigDecimal amount) {
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Transfer amount must be greater than zero");
         }
@@ -138,12 +140,12 @@ ApiResponse accountresponse = new ApiResponse<>(true,"Account registered success
                 amount,
                 LocalDateTime.now()
         ));
-
-        return new TransferResponse(fromAccount, toAccount, amount);
+TransferResponse transferResponse = new TransferResponse(fromAccount, toAccount, amount);
+        return new ApiResponse<>(true,"Transfer was successfull",transferResponse);
     }
 
     @Override
-    public BalanceDTO getBalance(String accountNumber) {
+    public ApiResponse<BalanceDTO> getBalance(String accountNumber) {
         Account account = accountRepo.findByAccountNumber(accountNumber);
 
         BalanceDTO savedbalance = new BalanceDTO();
@@ -152,6 +154,6 @@ ApiResponse accountresponse = new ApiResponse<>(true,"Account registered success
 
 
 
-        return savedbalance;
+        return new ApiResponse<>(true,"balance is"+account.getBalance(),savedbalance);
     }
 }

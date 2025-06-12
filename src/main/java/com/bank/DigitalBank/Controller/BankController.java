@@ -45,14 +45,14 @@ public class BankController {
     }
 
     @PostMapping("/accounts/withdraw")
-    public ResponseEntity<WithdrawResponseDTO> depositsCash(@RequestBody WithdrawRequestDTO request){
-        WithdrawResponseDTO savedAccount = accountService.withdrawCash(request.getAccountNumber(),request.getAmount());
+    public ResponseEntity<ApiResponse<WithdrawResponseDTO>> depositsCash(@RequestBody WithdrawRequestDTO request){
+        ApiResponse<WithdrawResponseDTO> savedAccount = accountService.withdrawCash(request.getAccountNumber(),request.getAmount());
         return new ResponseEntity<>(savedAccount,HttpStatus.OK);
     }
 
     @PostMapping("/accounts/transfer")
-    public ResponseEntity<com.bank.DigitalBank.DTO.TransferResponse> transfer(@RequestBody TransferRequest request) {
-        com.bank.DigitalBank.DTO.TransferResponse transferResponse = accountService.transferAmount(
+    public ResponseEntity<ApiResponse<com.bank.DigitalBank.DTO.TransferResponse>> transfer(@RequestBody TransferRequest request) {
+        ApiResponse<com.bank.DigitalBank.DTO.TransferResponse> transferResponse = accountService.transferAmount(
                 request.getFromAccount(),
                 request.getToAccount(),
                 request.getAmount()
@@ -64,9 +64,9 @@ public class BankController {
     }
 
     @GetMapping("/accounts/balance/{accountNumber}")
-    public ResponseEntity<BalanceDTO> getBalance(@PathVariable String accountNumber){
+    public ResponseEntity<ApiResponse<BalanceDTO>> getBalance(@PathVariable String accountNumber){
 
-        BalanceDTO account = accountService.getBalance(accountNumber);
+        ApiResponse<BalanceDTO> account = accountService.getBalance(accountNumber);
 
         return new ResponseEntity<>(account,HttpStatus.OK);
     }

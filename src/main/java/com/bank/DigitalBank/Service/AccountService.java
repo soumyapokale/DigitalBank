@@ -1,6 +1,7 @@
 package com.bank.DigitalBank.Service;
 
 
+import com.bank.DigitalBank.DTO.TransferResponse;
 import com.bank.DigitalBank.Entity.Account;
 import com.bank.DigitalBank.dto.ApiResponse;
 import com.bank.DigitalBank.dto.BalanceDTO;
@@ -17,9 +18,9 @@ public interface AccountService {
 
     ApiResponse<DepositResponseDTO> depositCash(String accountNumber, BigDecimal amount);
 
-    WithdrawResponseDTO withdrawCash(String accountNumber, BigDecimal amount);
+    ApiResponse<WithdrawResponseDTO> withdrawCash(String accountNumber, BigDecimal amount);
 
-    com.bank.DigitalBank.DTO.TransferResponse transferAmount(String fromAccount, String toAccount, BigDecimal amount);
+    ApiResponse<TransferResponse> transferAmount(String fromAccount, String toAccount, BigDecimal amount);
 
-    BalanceDTO getBalance(String accountNumber);
+    ApiResponse<BalanceDTO> getBalance(String accountNumber);
 }
