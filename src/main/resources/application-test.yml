@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/DigitalBanking?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password: statebank
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update # or 'create-drop' for full test reset
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    show-sql: true
+    format-sql: true
+
+  sql:
+    init:
+      mode: always
+      platform: mysql
+
+
+
+## Use a different port if needed to isolate test environment
+#server:
+#  port: 8081
+
+
