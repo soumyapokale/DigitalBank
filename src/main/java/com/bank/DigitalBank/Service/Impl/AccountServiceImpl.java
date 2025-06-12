@@ -1,6 +1,7 @@
 package com.bank.DigitalBank.Service.Impl;
 
 
+import com.bank.DigitalBank.Controller.BankController;
 import com.bank.DigitalBank.DTO.TransferResponse;
 import com.bank.DigitalBank.Entity.Account;
 import com.bank.DigitalBank.Entity.Transaction;
@@ -15,6 +16,8 @@ import com.bank.DigitalBank.dto.BalanceDTO;
 import com.bank.DigitalBank.dto.DepositResponseDTO;
 import com.bank.DigitalBank.dto.WithdrawResponseDTO;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +32,7 @@ public class AccountServiceImpl implements AccountService {
 
     private TransactionRepo transactionRepo;
 
+    private static final Logger logger = LoggerFactory.getLogger(AccountServiceImpl.class);
     public AccountServiceImpl(AccountRepo accountRepo, UserRepo userRepo, TransactionRepo transactionRepo) {
         this.accountRepo = accountRepo;
         this.userRepo = userRepo;
@@ -44,6 +48,7 @@ public class AccountServiceImpl implements AccountService {
 
         account.setUser(fullUser); // Set fully hydrated user
         Account savedAccount = accountRepo.save(account);
+        logger.info("Bank Account Created : "+savedAccount.getAccountNumber());
 ApiResponse accountresponse = new ApiResponse<>(true,"Account registered successfully",savedAccount);
         return accountresponse;
     }
@@ -75,6 +80,8 @@ ApiResponse accountresponse = new ApiResponse<>(true,"Account registered success
                 account.getAccountNumber(),
                 account.getBalance()
         );
+
+        logger.info("Money Deposited to : "+saved.getAccountNumber() + "with balance "+ saved.getNewBalance());
         return new ApiResponse<>(true,"Transaction was successfull",saved);
     }
 
@@ -103,6 +110,8 @@ ApiResponse accountresponse = new ApiResponse<>(true,"Account registered success
                 "Withdraw successful",
                 account.getAccountNumber(),
                 account.getBalance());
+
+        logger.info("Money Withdrawn from : "+withdrawResponseDTO.getAccountNumber() +  "with new balance "+ withdrawResponseDTO.getNewBalance());
         return new ApiResponse<>(true,"Withdrawal was successfull",withdrawResponseDTO);
 
     }
@@ -132,7 +141,7 @@ ApiResponse accountresponse = new ApiResponse<>(true,"Account registered success
         accountRepo.save(toAccountt);
 
         // Save transaction (debit)
-        transactionRepo.save(new Transaction(
+        Transaction t = transactionRepo.save(new Transaction(
                 null,
                 fromAccountt.getAccountNumber(),
                 toAccountt.getAccountNumber(),
@@ -141,6 +150,8 @@ ApiResponse accountresponse = new ApiResponse<>(true,"Account registered success
                 LocalDateTime.now()
         ));
 TransferResponse transferResponse = new TransferResponse(fromAccount, toAccount, amount);
+
+        logger.info("Money Deposited to : "+transferResponse.getToAccount() + "from "+transferResponse.getFromAccount() +"with balance "+t.getAmount());
         return new ApiResponse<>(true,"Transfer was successfull",transferResponse);
     }
 
@@ -152,7 +163,7 @@ TransferResponse transferResponse = new TransferResponse(fromAccount, toAccount,
         savedbalance.setBalance(account.getBalance());
         savedbalance.setAccountNumber(account.getAccountNumber());
 
-
+        logger.info("Balance for "+accountNumber +"is " + savedbalance.getBalance());
 
         return new ApiResponse<>(true,"balance is"+account.getBalance(),savedbalance);
     }
