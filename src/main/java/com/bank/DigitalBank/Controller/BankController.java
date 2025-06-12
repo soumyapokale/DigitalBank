@@ -6,6 +6,7 @@ import com.bank.DigitalBank.Entity.User;
 import com.bank.DigitalBank.Service.AccountService;
 import com.bank.DigitalBank.Service.UserService;
 import com.bank.DigitalBank.dto.*;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -37,7 +38,7 @@ public class BankController {
     }
 
     @PostMapping("/accounts/create")
-    public ResponseEntity<ApiResponse<AccountDto>> registerUserAccount(@RequestBody AccountDto account){
+    public ResponseEntity<ApiResponse<AccountDto>> registerUserAccount(@Valid  @RequestBody AccountDto account){
         logger.info("Registering User Bank Account in Bank of Soumya");
         ApiResponse<AccountDto> savedAccount = accountService.register(account);
         logger.info("Registered User Bank Account in Bank of Soumya successfully");

@@ -1,13 +1,27 @@
 package com.bank.DigitalBank.dto;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+
+import jakarta.validation.constraints.NotNull;
+import org.hibernate.annotations.NotFound;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class AccountDto {
     private Long id;
+
     private String accountNumber;
+
+    @NotNull
+    @DecimalMin(value = "0.0", inclusive = false, message = "Balance must be positive")
     private BigDecimal balance;
+
+
     private LocalDateTime createdAt;
+
+    @NotNull(message = "User ID is required")
     private Long userId; // Only expose user ID, not the full User object
 
 
