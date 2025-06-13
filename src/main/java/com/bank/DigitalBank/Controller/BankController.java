@@ -30,7 +30,7 @@ public class BankController {
     }
 
     @PostMapping(value="/users/register",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<User>> registerUser(@RequestBody UserDto user){
+    public ResponseEntity<ApiResponse<User>> registerUser( @Valid @RequestBody UserDto user){
         logger.info("Registering User in Bank of Soumya");
         ApiResponse<User> saveduser = userService.register(user);
         logger.info("Registered User in Bank of Soumya successfully");
@@ -46,7 +46,7 @@ public class BankController {
     }
 
     @PostMapping("/accounts/deposit")
-    public ResponseEntity<ApiResponse<DepositResponseDTO>> depositsCash(@RequestBody DepositRequestDTO request){
+    public ResponseEntity<ApiResponse<DepositResponseDTO>> depositsCash(@RequestBody @Valid DepositRequestDTO request){
         logger.info("Depositing Money");
         ApiResponse<DepositResponseDTO> savedAccount = accountService.depositCash(request.getAccountNumber(),request.getAmount());
         logger.info("Deposited Money in " + request.getAccountNumber());
@@ -54,7 +54,7 @@ public class BankController {
     }
 
     @PostMapping("/accounts/withdraw")
-    public ResponseEntity<ApiResponse<WithdrawResponseDTO>> depositsCash(@RequestBody WithdrawRequestDTO request){
+    public ResponseEntity<ApiResponse<WithdrawResponseDTO>> withdrawCash(@RequestBody @Valid WithdrawRequestDTO request){
         logger.info("Withdrawing Money");
         ApiResponse<WithdrawResponseDTO> savedAccount = accountService.withdrawCash(request.getAccountNumber(),request.getAmount());
         logger.info("Withdrawed Money from bank");
@@ -62,7 +62,7 @@ public class BankController {
     }
 
     @PostMapping("/accounts/transfer")
-    public ResponseEntity<ApiResponse<com.bank.DigitalBank.DTO.TransferResponse>> transfer(@RequestBody TransferRequest request) {
+    public ResponseEntity<ApiResponse<com.bank.DigitalBank.DTO.TransferResponse>> transfer(@RequestBody @Valid TransferRequest request) {
         logger.info("Transfering");
         ApiResponse<com.bank.DigitalBank.DTO.TransferResponse> transferResponse = accountService.transferAmount(
                 request.getFromAccount(),

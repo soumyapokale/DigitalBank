@@ -76,6 +76,10 @@ ApiResponse accountresponse = new ApiResponse<>(true,"Account registered success
         Account account = accountRepo.findByAccountNumber(accountNumber);
         BigDecimal newBalance = account.getBalance().add(amount);
 
+        if (account == null) {
+            throw new IllegalArgumentException("Account not found with number: " + accountNumber);
+        }
+
         account.setBalance(newBalance);
 
         accountRepo.save(account);

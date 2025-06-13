@@ -1,6 +1,7 @@
 package com.bank.DigitalBank.dto;
 
 import jakarta.persistence.Column;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
@@ -8,7 +9,10 @@ import java.math.BigDecimal;
 public class BalanceDTO {
 
 
+
+
     private  String accountNumber;
+
 
 
     private BigDecimal balance;
