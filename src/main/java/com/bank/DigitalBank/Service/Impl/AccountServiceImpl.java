@@ -65,6 +65,16 @@ public class AccountServiceImpl implements AccountService {
         Account savedAccount = accountRepo.save(realaccount);
         logger.info("Bank Account Created : "+savedAccount.getAccountNumber());
         AccountDto accountDto = accountMapper.toAccountDto(savedAccount);
+
+        Transaction transaction = new Transaction(
+                null,                         // id (auto-generated)
+                null,                         // fromAccount
+                realaccount.getAccountNumber(),   // toAccount
+                TransactionType.DEPOSIT,      // transactionType
+                realaccount.getBalance(),                       // amount
+                null                          // transactionDate (auto-set by @CreationTimestamp)
+        );
+        transactionRepo.save(transaction);
 ApiResponse accountresponse = new ApiResponse<>(true,"Account registered successfully",accountDto);
         return accountresponse;
     }
