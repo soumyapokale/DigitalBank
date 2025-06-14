@@ -2,7 +2,7 @@ package com.bank.DigitalBank.Service.Impl;
 
 
 
-import com.bank.DigitalBank.DTO.TransferResponse;
+
 import com.bank.DigitalBank.Entity.Account;
 import com.bank.DigitalBank.Entity.Transaction;
 import com.bank.DigitalBank.Entity.User;

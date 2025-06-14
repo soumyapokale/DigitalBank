@@ -7,6 +7,7 @@ import com.bank.DigitalBank.dto.UserDto;
 import org.springframework.stereotype.Service;
 
 @Service
+
 public interface UserService {
-    ApiResponse<User> register(UserDto user);
+    ApiResponse<UserDto> register(UserDto user);
 }

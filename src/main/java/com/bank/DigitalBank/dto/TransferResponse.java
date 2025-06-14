@@ -1,4 +1,4 @@
-package com.bank.DigitalBank.DTO;
+package com.bank.DigitalBank.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

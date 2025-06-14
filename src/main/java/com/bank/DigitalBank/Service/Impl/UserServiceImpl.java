@@ -28,7 +28,7 @@ public class UserServiceImpl implements UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @Override
-    public ApiResponse<User> register(UserDto user) {
+    public ApiResponse<UserDto> register(UserDto user) {
 
 
         if (user.getRoles() == null || user.getRoles().isEmpty()) {
@@ -41,7 +41,7 @@ public class UserServiceImpl implements UserService {
         User registerUser = modelMapperConfig.modelMapper().map(user,User.class);
         User saved = userRepo.save(registerUser);
 
-        ApiResponse<User> savedUser = new ApiResponse(true,"User registered successfully",modelMapperConfig.modelMapper().map(saved,UserDto.class));
+        ApiResponse<UserDto> savedUser = new ApiResponse(true,"User registered successfully",modelMapperConfig.modelMapper().map(saved,UserDto.class));
 
         logger.info("User Registered: "+ user.getName());
         return savedUser;

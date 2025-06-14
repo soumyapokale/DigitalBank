@@ -30,9 +30,9 @@ public class BankController {
     }
 
     @PostMapping(value="/users/register",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<User>> registerUser( @Valid @RequestBody UserDto user){
+    public ResponseEntity<ApiResponse<UserDto>> registerUser( @Valid @RequestBody UserDto user){
         logger.info("Registering User in Bank of Soumya");
-        ApiResponse<User> saveduser = userService.register(user);
+        ApiResponse<UserDto> saveduser = userService.register(user);
         logger.info("Registered User in Bank of Soumya successfully");
         return new ResponseEntity<>(saveduser,HttpStatus.CREATED);
     }
@@ -62,9 +62,9 @@ public class BankController {
     }
 
     @PostMapping("/accounts/transfer")
-    public ResponseEntity<ApiResponse<com.bank.DigitalBank.DTO.TransferResponse>> transfer(@RequestBody @Valid TransferRequest request) {
+    public ResponseEntity<ApiResponse<com.bank.DigitalBank.dto.TransferResponse>> transfer(@RequestBody @Valid TransferRequest request) {
         logger.info("Transfering");
-        ApiResponse<com.bank.DigitalBank.DTO.TransferResponse> transferResponse = accountService.transferAmount(
+        ApiResponse<com.bank.DigitalBank.dto.TransferResponse> transferResponse = accountService.transferAmount(
                 request.getFromAccount(),
                 request.getToAccount(),
                 request.getAmount()

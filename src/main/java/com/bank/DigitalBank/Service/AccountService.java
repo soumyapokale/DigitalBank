@@ -1,7 +1,7 @@
 package com.bank.DigitalBank.Service;
 
 
-import com.bank.DigitalBank.DTO.TransferResponse;
+import com.bank.DigitalBank.dto.TransferResponse;
 import com.bank.DigitalBank.Entity.Account;
 import com.bank.DigitalBank.dto.*;
 import org.springframework.stereotype.Service;
