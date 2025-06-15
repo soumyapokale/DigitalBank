@@ -226,5 +226,62 @@ class AccountServiceTest {
 
     }
 
+    // ❌ Error scenarios
 
+    @Test
+    public void register_shouldFailWhenUserNotFound() {
+        when(userRepo.findById(validAccount.getUserId())).thenReturn(Optional.empty());
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> accountService.register(validAccount));
+        assertEquals("User not found with id: " + validAccount.getUserId(), ex.getMessage());
+    }
+
+    @Test
+    public void deposit_shouldFailWhenAccountNotFound() {
+        when(accountRepo.findByAccountNumber(anyString())).thenReturn(null);
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () ->
+                accountService.depositCash("INVALID_ACC", BigDecimal.valueOf(1000)));
+
+        assertEquals("Account not found with account number: INVALID_ACC", ex.getMessage());
+    }
+
+    @Test
+    public void withdraw_shouldFailWhenInsufficientBalance() {
+        realAccount.setBalance(BigDecimal.valueOf(100));
+
+        when(accountRepo.findByAccountNumber(realAccount.getAccountNumber())).thenReturn(realAccount);
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () ->
+                accountService.withdrawCash(realAccount.getAccountNumber(), BigDecimal.valueOf(200)));
+
+        assertEquals("Insufficient balance", ex.getMessage());
+    }
+
+    @Test
+    public void transfer_shouldFailWhenAccountsInvalid() {
+        when(accountRepo.findByAccountNumber("FROM_ACC")).thenReturn(null);
+        when(accountRepo.findByAccountNumber("TO_ACC")).thenReturn(null);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                accountService.transferAmount("FROM_ACC", "TO_ACC", BigDecimal.valueOf(100)));
+
+        assertEquals("Invalid account number", ex.getMessage());
+    }
+
+    @Test
+    public void transfer_shouldFailWhenInsufficientFunds() {
+        Account from = new Account(1L, "FROM", new BigDecimal("50.00"), LocalDateTime.now(), new User());
+        Account to = new Account(2L, "TO", new BigDecimal("200.00"), LocalDateTime.now(), new User());
+
+        when(accountRepo.findByAccountNumber("FROM")).thenReturn(from);
+        when(accountRepo.findByAccountNumber("TO")).thenReturn(to);
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
+                accountService.transferAmount("FROM", "TO", new BigDecimal("100.00")));
+
+        assertEquals("Insufficient balance in source account", ex.getMessage());
+    }
 }
+
+

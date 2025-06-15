@@ -1,0 +1,100 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=windows-1252"> 
+  <title>Coverage Report > AccountService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.bank.DigitalBank.Service</a>
+</div>
+
+<h1>Coverage Summary for Class: AccountService (com.bank.DigitalBank.Service)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+</tr>
+  <tr>
+    <td class="name">AccountService$MockitoMock$thgh4l1W</td>
+  </tr>
+  <tr>
+    <td class="name">AccountService$MockitoMock$thgh4l1W$auxiliary$13sCXkKT</td>
+  </tr>
+  <tr>
+    <td class="name">AccountService$MockitoMock$thgh4l1W$auxiliary$S0BVqxny</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.bank.DigitalBank.Service;
+&nbsp;
+&nbsp;
+&nbsp;import com.bank.DigitalBank.dto.TransferResponse;
+&nbsp;import com.bank.DigitalBank.Entity.Account;
+&nbsp;import com.bank.DigitalBank.dto.*;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import java.math.BigDecimal;
+&nbsp;
+&nbsp;@Service
+&nbsp;public interface AccountService {
+&nbsp;
+&nbsp;    ApiResponse&lt;AccountDto&gt; register(AccountDto account);
+&nbsp;
+&nbsp;    ApiResponse&lt;DepositResponseDTO&gt; depositCash(String accountNumber, BigDecimal amount);
+&nbsp;
+&nbsp;    ApiResponse&lt;WithdrawResponseDTO&gt; withdrawCash(String accountNumber, BigDecimal amount);
+&nbsp;
+&nbsp;    ApiResponse&lt;TransferResponse&gt; transferAmount(String fromAccount, String toAccount, BigDecimal amount);
+&nbsp;
+&nbsp;    ApiResponse&lt;BalanceDTO&gt; getBalance(String accountNumber);
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-06-15 10:56</div>
+</div>
+</body>
+</html>

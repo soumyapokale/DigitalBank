@@ -84,11 +84,12 @@ ApiResponse accountresponse = new ApiResponse<>(true,"Account registered success
     public ApiResponse<DepositResponseDTO> depositCash(String accountNumber, BigDecimal amount) {
 
         Account account = accountRepo.findByAccountNumber(accountNumber);
+        if (account == null) {
+            throw new IllegalArgumentException("Account not found with account number: " + accountNumber);
+        }
         BigDecimal newBalance = account.getBalance().add(amount);
 
-        if (account == null) {
-            throw new IllegalArgumentException("Account not found with number: " + accountNumber);
-        }
+
 
         account.setBalance(newBalance);
 
@@ -120,6 +121,14 @@ ApiResponse accountresponse = new ApiResponse<>(true,"Account registered success
     @Override
     public ApiResponse<WithdrawResponseDTO> withdrawCash(String accountNumber, BigDecimal amount) {
         Account account = accountRepo.findByAccountNumber(accountNumber);
+
+        if (account == null) {
+            throw new IllegalArgumentException("Account not found with number: " + accountNumber);
+        }
+
+        if (account.getBalance().compareTo(amount) < 0) {
+            throw new IllegalStateException("Insufficient balance");
+        }
         BigDecimal newBalance = account.getBalance().subtract(amount);
         account.setBalance(newBalance);
 
@@ -155,9 +164,10 @@ ApiResponse accountresponse = new ApiResponse<>(true,"Account registered success
         Account fromAccountt = accountRepo.findByAccountNumber(fromAccount);
         Account toAccountt = accountRepo.findByAccountNumber(toAccount);
 
-        if (fromAccount == null || toAccount == null) {
+        if (fromAccountt == null || toAccountt == null) {
             throw new IllegalArgumentException("Invalid account number");
         }
+
 
         if (fromAccountt.getBalance().compareTo(amount) < 0) {
             throw new IllegalStateException("Insufficient balance in source account");
@@ -188,6 +198,9 @@ TransferResponse transferResponse = new TransferResponse(fromAccount, toAccount,
     @Override
     public ApiResponse<BalanceDTO> getBalance(String accountNumber) {
         Account account = accountRepo.findByAccountNumber(accountNumber);
+        if (account == null) {
+            throw new IllegalArgumentException("Account not found with number: " + accountNumber);
+        }
 
         BalanceDTO savedbalance = new BalanceDTO();
         savedbalance.setBalance(account.getBalance());

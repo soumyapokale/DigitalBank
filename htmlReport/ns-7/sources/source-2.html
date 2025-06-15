@@ -1,0 +1,153 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=windows-1252"> 
+  <title>Coverage Report > UserServiceImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.bank.DigitalBank.Service.Impl</a>
+</div>
+
+<h1>Coverage Summary for Class: UserServiceImpl (com.bank.DigitalBank.Service.Impl)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">UserServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    92.9%
+  </span>
+  <span class="absValue">
+    (13/14)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.bank.DigitalBank.Service.Impl;
+&nbsp;
+&nbsp;
+&nbsp;import com.bank.DigitalBank.Entity.User;
+&nbsp;import com.bank.DigitalBank.Repository.UserRepo;
+&nbsp;import com.bank.DigitalBank.Service.UserService;
+&nbsp;import com.bank.DigitalBank.config.ModelMapperConfig;
+&nbsp;import com.bank.DigitalBank.dto.ApiResponse;
+&nbsp;import com.bank.DigitalBank.dto.UserDto;
+&nbsp;import org.slf4j.Logger;
+&nbsp;import org.slf4j.LoggerFactory;
+&nbsp;import org.springframework.security.crypto.password.PasswordEncoder;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;@Service
+&nbsp;public class UserServiceImpl implements UserService {
+&nbsp;
+&nbsp;    private final PasswordEncoder passwordEncoder;
+&nbsp;    private final UserRepo userRepo;
+&nbsp;
+&nbsp;    private final ModelMapperConfig modelMapperConfig;
+<b class="fc">&nbsp;    public UserServiceImpl(PasswordEncoder passwordEncoder, UserRepo userRepo, ModelMapperConfig modelMapperConfig) {</b>
+<b class="fc">&nbsp;        this.passwordEncoder = passwordEncoder;</b>
+<b class="fc">&nbsp;        this.userRepo = userRepo;</b>
+<b class="fc">&nbsp;        this.modelMapperConfig = modelMapperConfig;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public ApiResponse&lt;UserDto&gt; register(UserDto user) {
+&nbsp;
+&nbsp;
+<b class="fc">&nbsp;        if (user.getRoles() == null || user.getRoles().isEmpty()) {</b>
+<b class="nc">&nbsp;            user.setRoles(&quot;USER&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        logger.info(&quot;Encoding Password&quot;);</b>
+<b class="fc">&nbsp;        user.setPassword(passwordEncoder.encode(user.getPassword()));</b>
+&nbsp;
+<b class="fc">&nbsp;        User registerUser = modelMapperConfig.modelMapper().map(user,User.class);</b>
+<b class="fc">&nbsp;        User saved = userRepo.save(registerUser);</b>
+&nbsp;
+<b class="fc">&nbsp;        ApiResponse&lt;UserDto&gt; savedUser = new ApiResponse(true,&quot;User registered successfully&quot;,modelMapperConfig.modelMapper().map(saved,UserDto.class));</b>
+&nbsp;
+<b class="fc">&nbsp;        logger.info(&quot;User Registered: &quot;+ user.getName());</b>
+<b class="fc">&nbsp;        return savedUser;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-06-15 10:56</div>
+</div>
+</body>
+</html>
