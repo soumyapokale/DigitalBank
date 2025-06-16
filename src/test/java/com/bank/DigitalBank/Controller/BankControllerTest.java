@@ -1,5 +1,6 @@
 package com.bank.DigitalBank.Controller;
 
+import com.bank.DigitalBank.Entity.enums.TransactionType;
 import com.bank.DigitalBank.Service.AccountService;
 import com.bank.DigitalBank.Service.UserService;
 import com.bank.DigitalBank.Utils.JsonUtil;
@@ -17,11 +18,14 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(BankController.class)
@@ -36,6 +40,7 @@ class BankControllerTest {
     @MockBean
     private AccountService accountService; // ✅ Required for BankController
 
+private LoginRequest loginRequest;
 
     private AccountDto validAccount;
     private UserDto validUser;
@@ -45,6 +50,8 @@ class BankControllerTest {
 
         validUser = JsonUtil.readJsonFileAsObject("ValidUser.json", UserDto.class);
         validAccount = JsonUtil.readJsonFileAsObject("ValidAccount.json", AccountDto.class);
+
+
 
     }
 
@@ -169,4 +176,85 @@ class BankControllerTest {
 
     }
 
+    @Test
+    public  void login() throws Exception {
+        loginRequest = new LoginRequest("soumyapokale@gmail.com","statebank");
+
+        LoginResponse loginResponse = new LoginResponse(1L,"soumyapokale","soumyapokale@gmail.com");
+
+        ApiResponse<LoginResponse> loginresponse= new ApiResponse<>(true,"success",loginResponse);
+
+        when(userService.login(any(LoginRequest.class))).thenReturn(loginresponse);
+        mockMvc.perform(post("/api/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(loginRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.email").value("soumyapokale@gmail.com"));
+
+}
+
+    @Test
+    public void transferHistory() throws Exception {
+
+        String accountNumber = "SKI101010023";
+
+        TrasactionResponse tx1 = new TrasactionResponse(
+                1L,
+                TransactionType.DEPOSIT,
+                new BigDecimal("1000.00"),
+                LocalDateTime.now().minusDays(1)
+        );
+
+        TrasactionResponse tx2 = new TrasactionResponse(
+                1L,
+                TransactionType.WITHDRAWAL,
+                new BigDecimal("1000.00"),
+                LocalDateTime.now().minusDays(1)
+        );
+        TrasactionResponse tx3 = new TrasactionResponse(
+                3L,
+                TransactionType.TRANSFER,
+                new BigDecimal("750.00"),
+                LocalDateTime.now()
+        );
+
+        List<TrasactionResponse> response = List.of(tx1,tx2,tx3);
+
+        ApiResponse<List<TrasactionResponse>> apiResponse= new ApiResponse<>(true,"SUCCESS",response);
+
+        when(accountService.getTransactionHistory(accountNumber)).thenReturn(apiResponse);
+
+        mockMvc.perform(get("/api/users/transaction/{accountNumber}", accountNumber)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.length()").value(3))
+                .andExpect(jsonPath("$.data[0].transactionType").value("DEPOSIT"))
+                .andExpect(jsonPath("$.data[1].transactionType").value("WITHDRAWAL"))
+                .andExpect(jsonPath("$.data[2].transactionType").value("TRANSFER"));
+
+    }
+
+    @Test
+    public void accountSummaryHistoryTest() throws Exception {
+
+        AccountSummaryDTO accountSummaryDTO = new AccountSummaryDTO("SKI101010023","soumya",new BigDecimal(1000),new BigDecimal(1234),new BigDecimal(1567),new BigDecimal(2222));
+
+        ApiResponse<AccountSummaryDTO> response= new ApiResponse<>(true,"SUCCESS",accountSummaryDTO);
+       when(accountService.getAccountSummary(accountSummaryDTO.getAccountNumber())).thenReturn(response);
+        mockMvc.perform(get("/api/users/account/{accountNumber}/summary",accountSummaryDTO.getAccountNumber()).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.accountNumber").value("SKI101010023"))
+                .andExpect(jsonPath("$.data.holderName").value("soumya"))
+                .andExpect(jsonPath("$.data.balance").value(1000))
+                .andExpect(jsonPath("$.data.totalDeposits").value(1234))
+                .andExpect(jsonPath("$.data.totalWithdrawals").value(1567))
+                .andExpect(jsonPath("$.data.totalTransfers").value(2222));
+
+
+
+    }
 }
