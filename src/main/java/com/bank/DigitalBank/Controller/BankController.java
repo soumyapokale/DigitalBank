@@ -15,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api")
 public class BankController {
@@ -81,6 +83,31 @@ public class BankController {
         ApiResponse<BalanceDTO> account = accountService.getBalance(accountNumber);
         logger.info("Balance is "+ account.getData().getBalance());
         return new ResponseEntity<>(account,HttpStatus.OK);
+    }
+
+    @PostMapping("users/login")
+
+    public ResponseEntity<ApiResponse<LoginResponse>> loginUser(@RequestBody @Valid LoginRequest request) throws Exception {
+        logger.info("trying to login");
+        ApiResponse<LoginResponse> response = userService.login(request);
+        logger.info("Login Success");
+        return new ResponseEntity<>(response,HttpStatus.OK);
+
+    }
+
+    @GetMapping("users/transaction/{accountNumber}")
+    public ResponseEntity<ApiResponse<List<TrasactionResponse>>> getAccountTransactionHistory(@Valid @PathVariable String accountNumber){
+        ApiResponse<List<TrasactionResponse>> response = accountService.getTransactionHistory(accountNumber);
+        logger.info("Fetching transaction history");
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+    @GetMapping("users/account/{accountNumber}/summary")
+    public ResponseEntity<ApiResponse<AccountSummaryDTO>> showAccountSummary(@Valid @PathVariable String accountNumber){
+        ApiResponse<AccountSummaryDTO> accountSummary = accountService.getAccountSummary(accountNumber);
+        logger.info("Fetching Account Summary");
+        return new ResponseEntity<>(accountSummary,HttpStatus.OK);
+
     }
 
 }

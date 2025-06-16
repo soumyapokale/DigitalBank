@@ -7,6 +7,7 @@ import com.bank.DigitalBank.dto.*;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 public interface AccountService {
@@ -20,4 +21,8 @@ public interface AccountService {
     ApiResponse<TransferResponse> transferAmount(String fromAccount, String toAccount, BigDecimal amount);
 
     ApiResponse<BalanceDTO> getBalance(String accountNumber);
+
+    ApiResponse<List<TrasactionResponse>> getTransactionHistory(String accountNumber);
+
+    ApiResponse<AccountSummaryDTO> getAccountSummary(String accountNumber);
 }

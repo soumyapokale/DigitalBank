@@ -22,7 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Transactional
 @Service
@@ -209,6 +211,55 @@ TransferResponse transferResponse = new TransferResponse(fromAccount, toAccount,
         logger.info("Balance for "+accountNumber +"is " + savedbalance.getBalance());
 
         return new ApiResponse<>(true,"balance is "+account.getBalance(),savedbalance);
+    }
+
+    @Override
+    public ApiResponse<List<TrasactionResponse>> getTransactionHistory(String accountNumber) {
+        List<Transaction> responseListTo = transactionRepo.findByToAccount(accountNumber);
+
+        List<Transaction> responseListFrom = transactionRepo.findByFromAccount(accountNumber);
+
+        List<Transaction> transactionList = Stream.concat(responseListTo.stream(), responseListFrom.stream()).toList();
+
+        List<TrasactionResponse> responseList = transactionList.stream()
+                .map(dto -> new TrasactionResponse(
+                        dto.getId(),
+                        dto.getTransactionType(),
+                        dto.getAmount(),
+                        dto.getTransactionDate()
+                ))
+                .sorted(Comparator.comparing(TrasactionResponse::getTransactionDate).reversed()).collect(Collectors.toList());
+
+        ApiResponse<List<TrasactionResponse>> apiresponse = new ApiResponse<>(true,"Transaction list fetched",responseList);
+        return apiresponse;
+
+    }
+
+    @Override
+    @Transactional
+    public ApiResponse<AccountSummaryDTO> getAccountSummary(String accountNumber) {
+        List<Transaction> depositDetails = transactionRepo.findByToAccountAndType(accountNumber,TransactionType.DEPOSIT);
+        List<Transaction> withdrawDetails = transactionRepo.findByToAccountAndType(accountNumber,TransactionType.WITHDRAWAL);
+        List<Transaction> transferDetails = transactionRepo.findByToAccountAndType(accountNumber,TransactionType.TRANSFER);
+
+        Account account = accountRepo.findByAccountNumber(accountNumber);
+
+        BigDecimal balance = account.getBalance();
+        logger.info("Balance for "+accountNumber +"is " + balance);
+        Optional<User> user = userRepo.findById(account.getUser().getId());
+
+        String Name = user.map(User::getName).orElseThrow(()-> new RuntimeException("User is not valid"));
+        logger.info("Username for "+accountNumber +"is " + Name);
+        BigDecimal depositTotal = depositDetails.stream().map(Transaction::getAmount).reduce(BigDecimal.ZERO,BigDecimal::add);
+
+        BigDecimal withdrawTotal = withdrawDetails.stream().map(Transaction::getAmount).reduce(BigDecimal.ZERO,BigDecimal::add);
+        BigDecimal transferTotal = transferDetails.stream().map(Transaction::getAmount).reduce(BigDecimal.ZERO,BigDecimal::add);
+
+
+        AccountSummaryDTO accountSummary = new AccountSummaryDTO(accountNumber,Name,balance,depositTotal,withdrawTotal,transferTotal);
+        ApiResponse<AccountSummaryDTO> response = new ApiResponse<>(true,"Account summary fetched",accountSummary);
+
+        return response;
     }
 
 
