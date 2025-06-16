@@ -70,7 +70,7 @@ http://localhost:8080/swagger-ui.html
 
 👨‍💻 Author
 Soumya
-📧 soumyapokale41@example.com
+📧 soumyapokale41@gmail.com
 
 
 ✨ Contributions, issues, and suggestions are welcome! ✨
