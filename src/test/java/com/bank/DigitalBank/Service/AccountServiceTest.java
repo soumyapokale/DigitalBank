@@ -22,6 +22,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,12 +51,13 @@ class AccountServiceTest {
 
     private Account realAccount;
 
-    private  UserDto validUser;
+    private UserDto validUser;
 
     private Transaction testTransaction;
 
     @Mock
     private UserRepo userRepo;
+
     @BeforeEach
     void setup() throws IOException {
 
@@ -82,11 +85,11 @@ class AccountServiceTest {
     }
 
     @Test
-    public void Register(){
+    public void Register() {
 
         User user = new User();
         user.setId(validAccount.getUserId());
-        realAccount = new Account(validAccount.getId(), validAccount.getAccountNumber(), validAccount.getBalance(),validAccount.getCreatedAt(),user);
+        realAccount = new Account(validAccount.getId(), validAccount.getAccountNumber(), validAccount.getBalance(), validAccount.getCreatedAt(), user);
 
         when(userRepo.findById(validAccount.getUserId())).thenReturn(Optional.of(user));
 
@@ -103,14 +106,14 @@ class AccountServiceTest {
 
         assertTrue(response.isSuccess());
 
-        assertEquals(response.getData().getAccountNumber(),validAccount.getAccountNumber());
+        assertEquals(response.getData().getAccountNumber(), validAccount.getAccountNumber());
 
-        assertEquals(response.getData().getBalance(),validAccount.getBalance());
+        assertEquals(response.getData().getBalance(), validAccount.getBalance());
 
     }
 
     @Test
-    public void testDepositCash(){
+    public void testDepositCash() {
 
 
         BigDecimal newBalance = new BigDecimal(10000);
@@ -127,7 +130,7 @@ class AccountServiceTest {
                 realAccount.getBalance()
         );
 
-        ApiResponse<DepositResponseDTO>  response= accountService.depositCash(realAccount.getAccountNumber(),realAccount.getBalance());
+        ApiResponse<DepositResponseDTO> response = accountService.depositCash(realAccount.getAccountNumber(), realAccount.getBalance());
 
         assertTrue(response.isSuccess());
         assertEquals(validAccount.getAccountNumber(), response.getData().getAccountNumber());
@@ -211,18 +214,18 @@ class AccountServiceTest {
 
     @Test
 
-    public void getBalance(){
+    public void getBalance() {
         when(accountRepo.findByAccountNumber(anyString())).thenReturn(realAccount);
 
         BalanceDTO savedbalance = new BalanceDTO();
         savedbalance.setBalance(realAccount.getBalance());
         savedbalance.setAccountNumber(realAccount.getAccountNumber());
 
-        ApiResponse<BalanceDTO> response= accountService.getBalance(realAccount.getAccountNumber());
+        ApiResponse<BalanceDTO> response = accountService.getBalance(realAccount.getAccountNumber());
 
         assertTrue(response.isSuccess());
-        assertEquals(response.getData().getBalance(),savedbalance.getBalance());
-        assertEquals(response.getData().getAccountNumber(),savedbalance.getAccountNumber());
+        assertEquals(response.getData().getBalance(), savedbalance.getBalance());
+        assertEquals(response.getData().getAccountNumber(), savedbalance.getAccountNumber());
 
     }
 
@@ -282,6 +285,128 @@ class AccountServiceTest {
 
         assertEquals("Insufficient balance in source account", ex.getMessage());
     }
+
+    public static List<Transaction> getTransactionListtoAccount() {
+        return Arrays.asList(
+                new Transaction(1L, "ACC123", "SBI123456789", TransactionType.TRANSFER, new BigDecimal("1500.00"), LocalDateTime.now().minusDays(1)),
+                new Transaction(2L, null, "SBI123456789", TransactionType.DEPOSIT, new BigDecimal("500.00"), LocalDateTime.now().minusDays(2)),
+                new Transaction(3L, "ACC789", "null", TransactionType.WITHDRAWAL, new BigDecimal("300.00"), LocalDateTime.now().minusDays(3)),
+                new Transaction(4L, "ACC456", "SBI123456789", TransactionType.TRANSFER, new BigDecimal("750.00"), LocalDateTime.now())
+        );
+    }
+
+    @Test
+    public void transactionHistoryTest() {
+        String accountNumber = "SBI123456789";
+
+        List<Transaction> toTransactions = Arrays.asList(
+                new Transaction(1L, "ACC123", "SBI123456789", TransactionType.TRANSFER, new BigDecimal("1500.00"), LocalDateTime.now().minusDays(1)),
+                new Transaction(2L, null, "SBI123456789", TransactionType.DEPOSIT, new BigDecimal("500.00"), LocalDateTime.now().minusDays(2)),
+                new Transaction(4L, "ACC456", "SBI123456789", TransactionType.TRANSFER, new BigDecimal("750.00"), LocalDateTime.now())
+        );
+
+        List<Transaction> fromTransactions = Arrays.asList(
+                new Transaction(3L, "SBI123456789", "ACC999", TransactionType.WITHDRAWAL, new BigDecimal("300.00"), LocalDateTime.now().minusDays(3))
+        );
+
+        when(transactionRepo.findByToAccount(accountNumber)).thenReturn(toTransactions);
+        when(transactionRepo.findByFromAccount(accountNumber)).thenReturn(fromTransactions);
+
+        ApiResponse<List<TrasactionResponse>> response = accountService.getTransactionHistory(accountNumber);
+
+        assertTrue(response.isSuccess());
+        assertEquals(4, response.getData().size());
+
+        TrasactionResponse dto = response.getData().get(0);
+        assertNotNull(dto.getTransactionType());
+        assertNotNull(dto.getAmount());
+    }
+
+
+    @Test
+    public void accountSummary() {
+        // Given
+        String accountNumber = "SBI123456789";
+
+        Transaction t1 = new Transaction(
+                1L,
+                null,
+                accountNumber,
+                TransactionType.DEPOSIT,
+                new BigDecimal("1000.00"),
+                LocalDateTime.now().minusDays(1)
+        );
+
+        Transaction t2 = new Transaction(
+                2L,
+                accountNumber,
+                null,
+                TransactionType.WITHDRAWAL,
+                new BigDecimal("1000.00"),
+                LocalDateTime.now().minusDays(1)
+        );
+
+        Transaction t3 = new Transaction(
+                3L,
+                "ACC111111111",
+                accountNumber,
+                TransactionType.TRANSFER,
+                new BigDecimal("750.00"),
+                LocalDateTime.now()
+        );
+
+        User testUser = new User();
+        testUser.setId(1L);
+        testUser.setName("Test User");
+        testUser.setEmail("testuser@example.com");
+        testUser.setPassword("securePassword");
+        testUser.setRoles("USER");
+
+        Account testAccount = new Account();
+        testAccount.setId(101L);
+        testAccount.setAccountNumber(accountNumber);
+        testAccount.setBalance(new BigDecimal("5000.00"));
+        testAccount.setCreatedAt(LocalDateTime.now().minusMonths(1));
+        testAccount.setUser(testUser);
+
+        List<Transaction> deposits = List.of(t1);
+        List<Transaction> withdrawals = List.of(t2);
+        List<Transaction> transfers = List.of(t3);
+
+        when(transactionRepo.findByToAccountAndType(accountNumber, TransactionType.DEPOSIT)).thenReturn(deposits);
+        when(transactionRepo.findByToAccountAndType(accountNumber, TransactionType.WITHDRAWAL)).thenReturn(withdrawals);
+        when(transactionRepo.findByToAccountAndType(accountNumber, TransactionType.TRANSFER)).thenReturn(transfers);
+        when(accountRepo.findByAccountNumber(accountNumber)).thenReturn(testAccount);
+        when(userRepo.findById(testUser.getId())).thenReturn(Optional.of(testUser));
+
+        // When
+        ApiResponse<AccountSummaryDTO> response = accountService.getAccountSummary(accountNumber);
+
+        // Then
+        assertTrue(response.isSuccess());
+        assertNotNull(response.getData());
+
+        AccountSummaryDTO dto = response.getData();
+        assertEquals(accountNumber, dto.getAccountNumber());
+        assertEquals("Test User", dto.getHolderName());
+        assertEquals(new BigDecimal("5000.00"), dto.getBalance());
+        assertEquals(new BigDecimal("1000.00"), dto.getTotalDeposits());
+        assertEquals(new BigDecimal("1000.00"), dto.getTotalWithdrawals());
+        assertEquals(new BigDecimal("750.00"), dto.getTotalTransfers());
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 

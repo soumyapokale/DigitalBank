@@ -84,6 +84,7 @@ public class Transaction {
         this.transactionDate = transactionDate;
     }
 
+
     public Transaction(Long id, String fromAccount, String toAccount, TransactionType transactionType, BigDecimal amount, LocalDateTime transactionDate) {
         this.id = id;
         this.fromAccount = fromAccount;
