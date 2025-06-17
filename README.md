@@ -68,6 +68,14 @@ http://localhost:8080/swagger-ui.html
 
 📄 Interactive API Docs (Swagger)
 
+🧪 How to Run Unit Tests
+▶️ Using IntelliJ IDEA
+Right-click on the test directory or any test class.
+
+Select "Run 'All Tests'" or "Run <TestClass>".
+
+You will see results in the Run/Test window.
+
 👨‍💻 Author
 Soumya
 📧 soumyapokale41@gmail.com
