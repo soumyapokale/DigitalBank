@@ -12,7 +12,9 @@ import com.bank.DigitalBank.Repository.AccountRepo;
 import com.bank.DigitalBank.Repository.TransactionRepo;
 import com.bank.DigitalBank.Repository.UserRepo;
 import com.bank.DigitalBank.Service.AccountService;
+import com.bank.DigitalBank.Service.EmailService;
 import com.bank.DigitalBank.Utils.AccountNumGenerator;
+import com.bank.DigitalBank.Utils.GenerateDiscription;
 import com.bank.DigitalBank.dto.*;
 
 import org.slf4j.Logger;
@@ -32,19 +34,23 @@ public class AccountServiceImpl implements AccountService {
 
     private AccountRepo accountRepo;
     private UserRepo userRepo;
+    private final EmailService emailService;
 
     private TransactionRepo transactionRepo;
 
     private AccountMapper accountMapper;
+    private GenerateDiscription generateDiscription;
 
 
 
     private static final Logger logger = LoggerFactory.getLogger(AccountServiceImpl.class);
-    public AccountServiceImpl(AccountRepo accountRepo, UserRepo userRepo, TransactionRepo transactionRepo, AccountMapper accountMapper) {
+    public AccountServiceImpl(AccountRepo accountRepo, UserRepo userRepo, EmailService emailService, TransactionRepo transactionRepo, AccountMapper accountMapper) {
         this.accountRepo = accountRepo;
         this.userRepo = userRepo;
+        this.emailService = emailService;
         this.transactionRepo = transactionRepo;
         this.accountMapper = accountMapper;
+
 
     }
 
@@ -158,12 +164,15 @@ ApiResponse accountresponse = new ApiResponse<>(true,"Account registered success
     }
 
     @Override
+    @Transactional
     public ApiResponse<TransferResponse> transferAmount(String fromAccount, String toAccount, BigDecimal amount) {
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Transfer amount must be greater than zero");
         }
 
+
         Account fromAccountt = accountRepo.findByAccountNumber(fromAccount);
+
         Account toAccountt = accountRepo.findByAccountNumber(toAccount);
 
         if (fromAccountt == null || toAccountt == null) {
@@ -183,18 +192,29 @@ ApiResponse accountresponse = new ApiResponse<>(true,"Account registered success
         accountRepo.save(toAccountt);
 
         // Save transaction (debit)
-        Transaction t = transactionRepo.save(new Transaction(
-                null,
+
+
+        Transaction forSender = transactionRepo.save(new Transaction(null,
                 fromAccountt.getAccountNumber(),
+                null,
+                TransactionType.DEBIT,
+                amount
+                ,LocalDateTime.now()));
+
+        Transaction forReciever = transactionRepo.save(new Transaction(null,null,
                 toAccountt.getAccountNumber(),
-                TransactionType.TRANSFER,
+                TransactionType.CREDIT,
                 amount,
-                LocalDateTime.now()
-        ));
+                LocalDateTime.now()));
 TransferResponse transferResponse = new TransferResponse(fromAccount, toAccount, amount);
 
-        logger.info("Money Deposited to : "+transferResponse.getToAccount() + " from "+transferResponse.getFromAccount() +" with balance "+t.getAmount());
-        return new ApiResponse<>(true,"Transfer was successfull",transferResponse);
+        logger.info("Money Deposited to : "+transferResponse.getToAccount() + " from "+transferResponse.getFromAccount() +" with balance "+amount);
+        User receiverUser = toAccountt.getUser();
+        User sender = fromAccountt.getUser();
+        emailService.sendEmail(receiverUser.getEmail(), "Deposit Received", "You have recieved  "+amount+" from" + sender.getEmail());
+        emailService.sendEmail(sender.getEmail(),"Money is Withdrawed",amount+" is being withdrawn from your bank account");
+
+        return new ApiResponse<>(true,"Transferred " + amount+ " from "+fromAccount +" to " + toAccount,transferResponse);
     }
 
     @Override
@@ -240,7 +260,9 @@ TransferResponse transferResponse = new TransferResponse(fromAccount, toAccount,
     public ApiResponse<AccountSummaryDTO> getAccountSummary(String accountNumber) {
         List<Transaction> depositDetails = transactionRepo.findByToAccountAndType(accountNumber,TransactionType.DEPOSIT);
         List<Transaction> withdrawDetails = transactionRepo.findByToAccountAndType(accountNumber,TransactionType.WITHDRAWAL);
-        List<Transaction> transferDetails = transactionRepo.findByToAccountAndType(accountNumber,TransactionType.TRANSFER);
+        List<Transaction> debitDetails = transactionRepo.findByToAccountAndType(accountNumber,TransactionType.DEBIT);
+        List<Transaction> creditDetails = transactionRepo.findByToAccountAndType(accountNumber,TransactionType.CREDIT);
+
 
         Account account = accountRepo.findByAccountNumber(accountNumber);
 
@@ -253,14 +275,59 @@ TransferResponse transferResponse = new TransferResponse(fromAccount, toAccount,
         BigDecimal depositTotal = depositDetails.stream().map(Transaction::getAmount).reduce(BigDecimal.ZERO,BigDecimal::add);
 
         BigDecimal withdrawTotal = withdrawDetails.stream().map(Transaction::getAmount).reduce(BigDecimal.ZERO,BigDecimal::add);
-        BigDecimal transferTotal = transferDetails.stream().map(Transaction::getAmount).reduce(BigDecimal.ZERO,BigDecimal::add);
+        BigDecimal debitTotal = debitDetails.stream().map(Transaction::getAmount).reduce(BigDecimal.ZERO,BigDecimal::add);
+        BigDecimal creditTotal = creditDetails.stream().map(Transaction::getAmount).reduce(BigDecimal.ZERO,BigDecimal::add);
 
 
-        AccountSummaryDTO accountSummary = new AccountSummaryDTO(accountNumber,Name,balance,depositTotal,withdrawTotal,transferTotal);
+        AccountSummaryDTO accountSummary = new AccountSummaryDTO(accountNumber,Name,balance,depositTotal,withdrawTotal,creditTotal,debitTotal);
         ApiResponse<AccountSummaryDTO> response = new ApiResponse<>(true,"Account summary fetched",accountSummary);
 
         return response;
     }
+
+    @Override
+    public ApiResponse<StatementResponse> getStatement(String accountNumber) {
+
+        Account account = accountRepo.findByAccountNumber(accountNumber);
+        if (account == null) {
+            throw new IllegalArgumentException("Account not found: " + accountNumber);
+        }
+
+        // Step 1: Start from current balance
+        BigDecimal runningBalance = account.getBalance();
+
+        // Step 2: Get top 5 latest transactions (most recent first)
+        List<Transaction> transactions = transactionRepo.findTop5ByFromAccountOrToAccountOrderByTransactionDateDesc(accountNumber, accountNumber);
+
+        List<MiniStatementResponse> statementResponses = new ArrayList<>();
+
+        for (Transaction txn : transactions) {
+            // Step 3: Create statement using current balance (AFTER this txn occurred)
+            MiniStatementResponse response = new MiniStatementResponse(
+                    txn.getId(),
+                    txn.getTransactionType(),
+                    txn.getAmount(),
+                    generateDiscription.generateDescription(txn, accountNumber),
+                    runningBalance,
+                    txn.getTransactionDate()
+            );
+            statementResponses.add(response);
+
+            // Step 4: Rewind balance to BEFORE this transaction
+            if (txn.getTransactionType() == TransactionType.DEPOSIT || txn.getTransactionType() == TransactionType.CREDIT) {
+                runningBalance = runningBalance.subtract(txn.getAmount());
+            } else if (txn.getTransactionType() == TransactionType.WITHDRAWAL || txn.getTransactionType() == TransactionType.DEBIT) {
+                runningBalance = runningBalance.add(txn.getAmount());
+            }
+        }
+
+        return new ApiResponse<>(
+                true,
+                "Mini statement for " + accountNumber,
+                new StatementResponse(statementResponses)
+        );
+    }
+
 
 
 }

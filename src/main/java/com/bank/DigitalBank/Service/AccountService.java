@@ -25,4 +25,6 @@ public interface AccountService {
     ApiResponse<List<TrasactionResponse>> getTransactionHistory(String accountNumber);
 
     ApiResponse<AccountSummaryDTO> getAccountSummary(String accountNumber);
+
+    ApiResponse<StatementResponse> getStatement(String accountNumber);
 }

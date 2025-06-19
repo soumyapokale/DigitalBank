@@ -15,7 +15,9 @@ public class AccountSummaryDTO {
 
     private BigDecimal totalWithdrawals;
 
-    private BigDecimal totalTransfers;
+    private BigDecimal totalCredit;
+
+    private BigDecimal totalDebit;
 
     public String getAccountNumber() {
         return accountNumber;
@@ -57,21 +59,33 @@ public class AccountSummaryDTO {
         this.totalWithdrawals = totalWithdrawals;
     }
 
-    public BigDecimal getTotalTransfers() {
-        return totalTransfers;
+
+    public BigDecimal getTotalCredit() {
+        return totalCredit;
     }
 
-    public void setTotalTransfers(BigDecimal totalTransfers) {
-        this.totalTransfers = totalTransfers;
+    public void setTotalCredit(BigDecimal totalCredit) {
+        this.totalCredit = totalCredit;
     }
 
-    public AccountSummaryDTO(String accountNumber, String holderName, BigDecimal balance, BigDecimal totalDeposits, BigDecimal totalWithdrawals, BigDecimal totalTransfers) {
+    public BigDecimal getTotalDebit() {
+        return totalDebit;
+    }
+
+    public void setTotalDebit(BigDecimal totalDebit) {
+        this.totalDebit = totalDebit;
+    }
+
+
+
+    public AccountSummaryDTO(String accountNumber, String holderName, BigDecimal balance, BigDecimal totalDeposits, BigDecimal totalWithdrawals, BigDecimal totalCredit, BigDecimal totalDebit) {
         this.accountNumber = accountNumber;
         this.holderName = holderName;
         this.balance = balance;
         this.totalDeposits = totalDeposits;
         this.totalWithdrawals = totalWithdrawals;
-        this.totalTransfers = totalTransfers;
+        this.totalCredit = totalCredit;
+        this.totalDebit = totalDebit;
     }
 
     public AccountSummaryDTO() {

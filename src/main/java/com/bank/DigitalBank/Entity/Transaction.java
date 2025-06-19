@@ -21,7 +21,7 @@ public class Transaction {
 
     private String fromAccount;
 
-    @Column(nullable = false)
+
     private String toAccount;
 
     @Enumerated(EnumType.STRING)

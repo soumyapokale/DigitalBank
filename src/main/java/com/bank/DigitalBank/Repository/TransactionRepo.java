@@ -24,4 +24,7 @@ public interface TransactionRepo extends JpaRepository<Transaction,Long> {
     List<Transaction> findByToAccountAndType(@Param("accountNumber") String accountNumber,
                                              @Param("type") TransactionType type);
 
+    List<Transaction> findTop5ByFromAccountOrToAccountOrderByTransactionDateDesc(String from, String to);
+
+
 }

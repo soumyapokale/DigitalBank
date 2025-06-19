@@ -110,4 +110,11 @@ public class BankController {
 
     }
 
+    @GetMapping("/accounts/{accountNumber}/mini-statement")
+    public ResponseEntity<ApiResponse<StatementResponse>> getMiniStatement(@Valid @PathVariable String accountNumber){
+        ApiResponse<StatementResponse> response = accountService.getStatement(accountNumber);
+
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
 }
