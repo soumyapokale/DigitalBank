@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -214,12 +215,18 @@ private LoginRequest loginRequest;
         );
         TrasactionResponse tx3 = new TrasactionResponse(
                 3L,
-                TransactionType.TRANSFER,
+                TransactionType.DEBIT,
+                new BigDecimal("750.00"),
+                LocalDateTime.now()
+        );
+        TrasactionResponse tx4 = new TrasactionResponse(
+                3L,
+                TransactionType.CREDIT,
                 new BigDecimal("750.00"),
                 LocalDateTime.now()
         );
 
-        List<TrasactionResponse> response = List.of(tx1,tx2,tx3);
+        List<TrasactionResponse> response = List.of(tx1,tx2,tx3,tx4);
 
         ApiResponse<List<TrasactionResponse>> apiResponse= new ApiResponse<>(true,"SUCCESS",response);
 
@@ -230,17 +237,18 @@ private LoginRequest loginRequest;
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("SUCCESS"))
-                .andExpect(jsonPath("$.data.length()").value(3))
+                .andExpect(jsonPath("$.data.length()").value(4))
                 .andExpect(jsonPath("$.data[0].transactionType").value("DEPOSIT"))
                 .andExpect(jsonPath("$.data[1].transactionType").value("WITHDRAWAL"))
-                .andExpect(jsonPath("$.data[2].transactionType").value("TRANSFER"));
+                .andExpect(jsonPath("$.data[2].transactionType").value("DEBIT"))
+                .andExpect(jsonPath("$.data[3].transactionType").value("CREDIT"));
 
     }
 
     @Test
     public void accountSummaryHistoryTest() throws Exception {
 
-        AccountSummaryDTO accountSummaryDTO = new AccountSummaryDTO("SKI101010023","soumya",new BigDecimal(1000),new BigDecimal(1234),new BigDecimal(1567),new BigDecimal(2222));
+        AccountSummaryDTO accountSummaryDTO = new AccountSummaryDTO("SKI101010023","soumya",new BigDecimal(1000),new BigDecimal(1234),new BigDecimal(1567),new BigDecimal(2222),new BigDecimal(2222));
 
         ApiResponse<AccountSummaryDTO> response= new ApiResponse<>(true,"SUCCESS",accountSummaryDTO);
        when(accountService.getAccountSummary(accountSummaryDTO.getAccountNumber())).thenReturn(response);
@@ -252,9 +260,40 @@ private LoginRequest loginRequest;
                 .andExpect(jsonPath("$.data.balance").value(1000))
                 .andExpect(jsonPath("$.data.totalDeposits").value(1234))
                 .andExpect(jsonPath("$.data.totalWithdrawals").value(1567))
-                .andExpect(jsonPath("$.data.totalTransfers").value(2222));
+                .andExpect(jsonPath("$.data.totalCredit").value(2222)).
+                andExpect(jsonPath("$.data.totalDebit").value(2222));
 
 
+    }
 
+    @Test
+    public void getMiniStatementTest() throws Exception {
+List<MiniStatementResponse> miniStatementResponses = getSampleStatements();
+
+String accountNumber = "SKI101010023";
+
+StatementResponse statementResponse = new StatementResponse(miniStatementResponses);
+
+ApiResponse<StatementResponse> response= new ApiResponse<>(true,"SUCCESS",statementResponse);
+
+when(accountService.getStatement(accountNumber)).thenReturn(response);
+
+mockMvc.perform(get("/api/accounts/{accountNumber}/mini-statement",accountNumber).contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.message").value("SUCCESS"))
+        .andExpect(jsonPath("$.data.miniStatementResponse").isArray())
+        .andExpect(jsonPath("$.data.miniStatementResponse[0].transactionType").value("DEPOSIT"))
+        .andExpect(jsonPath("$.data.miniStatementResponse[0].amount").value(1000.00));
+    }
+
+    public static List<MiniStatementResponse> getSampleStatements() {
+        return Arrays.asList(
+                new MiniStatementResponse(1L, TransactionType.DEPOSIT, new BigDecimal("1000.00"), "Initial Deposit", new BigDecimal("1000.00"), LocalDateTime.now().minusDays(5)),
+                new MiniStatementResponse(2L, TransactionType.WITHDRAWAL, new BigDecimal("200.00"), "ATM Withdrawal", new BigDecimal("800.00"), LocalDateTime.now().minusDays(4)),
+                new MiniStatementResponse(3L, TransactionType.CREDIT, new BigDecimal("500.00"), "Received from friend", new BigDecimal("1300.00"), LocalDateTime.now().minusDays(2)),
+                new MiniStatementResponse(4L, TransactionType.DEBIT, new BigDecimal("300.00"), "Sent to brother", new BigDecimal("1000.00"), LocalDateTime.now().minusDays(1)),
+                new MiniStatementResponse(5L, TransactionType.DEPOSIT, new BigDecimal("1000.00"), "Salary", new BigDecimal("2000.00"), LocalDateTime.now())
+        );
     }
 }
