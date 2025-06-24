@@ -5,5 +5,7 @@ public enum TransactionType {
     WITHDRAWAL,
     DEBIT,
 
-    CREDIT
+    CREDIT,
+
+    Interest
 }

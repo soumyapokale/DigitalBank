@@ -27,4 +27,5 @@ public interface TransactionRepo extends JpaRepository<Transaction,Long> {
     List<Transaction> findTop5ByFromAccountOrToAccountOrderByTransactionDateDesc(String from, String to);
 
 
+    long countByTransactionType(TransactionType transactionType);
 }

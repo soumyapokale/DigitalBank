@@ -117,4 +117,16 @@ public class BankController {
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
+    @GetMapping("admin/dashboard")
+
+    public ResponseEntity<ApiResponse<AdminDashboardResponse>> getAdminDashboard(){
+
+        ApiResponse<AdminDashboardResponse> response = accountService.getAdminDashboard();
+
+        return new ResponseEntity<>(response,HttpStatus.OK);
+
+    }
+
+
+
 }

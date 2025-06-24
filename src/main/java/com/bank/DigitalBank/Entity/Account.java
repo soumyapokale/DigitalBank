@@ -35,8 +35,16 @@ public class Account {
     @ManyToOne
     private User user;
 
+    private BigDecimal InterestRate;
 
 
+    public BigDecimal getInterestRate() {
+        return InterestRate;
+    }
+
+    public void setInterestRate(BigDecimal interestRate) {
+        InterestRate = interestRate;
+    }
 
     public Long getId() {
         return id;
@@ -74,12 +82,13 @@ public class Account {
         this.user = user;
     }
 
-    public Account(Long id, String accountNumber, BigDecimal balance, LocalDateTime createdAt, User user) {
+    public Account(Long id, String accountNumber, BigDecimal balance, LocalDateTime createdAt, User user, BigDecimal InterestRate) {
         this.id = id;
         this.accountNumber = accountNumber;
         this.balance = balance;
         this.createdAt = createdAt;
         this.user = user;
+        this.InterestRate=InterestRate;
     }
 
     public Account() {

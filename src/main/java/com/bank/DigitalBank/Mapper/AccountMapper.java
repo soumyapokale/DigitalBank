@@ -13,7 +13,7 @@ public class AccountMapper {
 
     public AccountDto toAccountDto(Account account){
 
-        AccountDto accountDto = new AccountDto(account.getId(), account.getAccountNumber(), account.getBalance(),account.getCreatedAt(),account.getUser().getId());
+        AccountDto accountDto = new AccountDto(account.getId(), account.getAccountNumber(), account.getBalance(),account.getCreatedAt(),account.getUser().getId(),account.getInterestRate());
 
 
         return accountDto;
@@ -23,7 +23,7 @@ public class AccountMapper {
 
         User user = new User();
         user.setId(accountDto.getUserId());
-        Account account = new Account(accountDto.getId(), accountDto.getAccountNumber(), accountDto.getBalance(),accountDto.getCreatedAt(),user);
+        Account account = new Account(accountDto.getId(), accountDto.getAccountNumber(), accountDto.getBalance(),accountDto.getCreatedAt(),user,accountDto.getInterestRate());
 
         return account;
     }

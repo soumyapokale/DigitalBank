@@ -19,10 +19,12 @@ import com.bank.DigitalBank.dto.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -41,6 +43,8 @@ public class AccountServiceImpl implements AccountService {
     private AccountMapper accountMapper;
     private GenerateDiscription generateDiscription;
 
+
+    private static final BigDecimal INTEREST_RATE = new BigDecimal("3.5");
 
 
     private static final Logger logger = LoggerFactory.getLogger(AccountServiceImpl.class);
@@ -61,6 +65,7 @@ public class AccountServiceImpl implements AccountService {
         User fullUser = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
+        account.setInterestRate(INTEREST_RATE);
 
         Account realaccount = accountMapper.toAccount(account);
         if (realaccount.getBalance() == null) {
@@ -327,6 +332,61 @@ TransferResponse transferResponse = new TransferResponse(fromAccount, toAccount,
                 new StatementResponse(statementResponses)
         );
     }
+
+    @Override
+    public ApiResponse<AdminDashboardResponse> getAdminDashboard() {
+        Long TotalAccounts = accountRepo.count();
+
+        Long totalUsers = userRepo.count();
+
+        BigDecimal totalBalance = accountRepo.getTotalBalance();
+
+        Long totalTransactions = transactionRepo.count();
+
+        Long totalDeposits = transactionRepo.countByTransactionType(TransactionType.DEPOSIT) + transactionRepo.countByTransactionType(TransactionType.CREDIT);
+
+        Long totalWithdrawals = transactionRepo.countByTransactionType(TransactionType.WITHDRAWAL) + transactionRepo.countByTransactionType(TransactionType.DEBIT);
+
+        Long totalInterestCredited = transactionRepo.countByTransactionType(TransactionType.Interest);
+
+        AdminDashboardResponse adminDashboardResponse = new AdminDashboardResponse(TotalAccounts,totalUsers,totalBalance,totalTransactions,totalDeposits,totalWithdrawals,totalInterestCredited);
+        ApiResponse<AdminDashboardResponse> response = new ApiResponse<>(true,"Fetched Admin Dashboard",adminDashboardResponse);
+
+        return response;
+    }
+
+    @Scheduled(cron = "0 * * * * *") // every minute for testing
+    public void creditDailyInterestToAllAccounts() {
+        List<Account> accounts = accountRepo.findAll(); // 🔁 apply to all accounts temporarily
+
+        for (Account account : accounts) {
+            BigDecimal balance = account.getBalance();
+            BigDecimal rate = account.getInterestRate(); // already set to 3.5 for now
+
+            BigDecimal dailyInterest = balance
+                    .multiply(INTEREST_RATE)
+                    .divide(BigDecimal.valueOf(100 * 365), 2, RoundingMode.HALF_UP);
+
+
+            if (dailyInterest.compareTo(BigDecimal.ZERO) > 0) {
+                account.setBalance(balance.add(dailyInterest));
+
+                Transaction transaction = new Transaction();
+                transaction.setToAccount(account.getAccountNumber());               // Account receiving interest
+                transaction.setFromAccount(null);                                   // No source (bank system)
+                transaction.setAmount(dailyInterest);                                    // Calculated interest
+                transaction.setTransactionType(TransactionType.Interest);             // CREDIT type
+                transaction.setTransactionDate(LocalDateTime.now());                // Current timestamp
+
+
+                transactionRepo.save(transaction);
+                accountRepo.save(account);
+            }
+        }
+
+        logger.info("✅ Daily interest credited to all accounts");
+    }
+
 
 
 

@@ -90,7 +90,7 @@ class AccountServiceTest {
                 validAccount.getAccountNumber(),
                 validAccount.getBalance(),
                 validAccount.getCreatedAt(),
-                user
+                user,new BigDecimal(3.5)
         );
 
     }
@@ -100,7 +100,7 @@ class AccountServiceTest {
 
         User user = new User();
         user.setId(validAccount.getUserId());
-        realAccount = new Account(validAccount.getId(), validAccount.getAccountNumber(), validAccount.getBalance(), validAccount.getCreatedAt(), user);
+        realAccount = new Account(validAccount.getId(), validAccount.getAccountNumber(), validAccount.getBalance(), validAccount.getCreatedAt(), user,new BigDecimal(3.5));
 
         when(userRepo.findById(validAccount.getUserId())).thenReturn(Optional.of(user));
 
@@ -183,8 +183,8 @@ class AccountServiceTest {
         user.setId(1L);
 
         // Setup accounts
-        Account fromAccount = new Account(1L, fromAccountNumber, new BigDecimal("1000.00"), LocalDateTime.now(), user);
-        Account toAccount = new Account(2L, toAccountNumber, new BigDecimal("200.00"), LocalDateTime.now(), user);
+        Account fromAccount = new Account(1L, fromAccountNumber, new BigDecimal("1000.00"), LocalDateTime.now(), user,new BigDecimal(3.5));
+        Account toAccount = new Account(2L, toAccountNumber, new BigDecimal("200.00"), LocalDateTime.now(), user,new BigDecimal(3.5));
 
         // Updated balances
         BigDecimal fromNewBalance = fromAccount.getBalance().subtract(transferAmount);
@@ -293,8 +293,8 @@ class AccountServiceTest {
 
     @Test
     public void transfer_shouldFailWhenInsufficientFunds() {
-        Account from = new Account(1L, "FROM", new BigDecimal("50.00"), LocalDateTime.now(), new User());
-        Account to = new Account(2L, "TO", new BigDecimal("200.00"), LocalDateTime.now(), new User());
+        Account from = new Account(1L, "FROM", new BigDecimal("50.00"), LocalDateTime.now(), new User(),new BigDecimal(3.5));
+        Account to = new Account(2L, "TO", new BigDecimal("200.00"), LocalDateTime.now(), new User(),new BigDecimal(3.5));
 
         when(accountRepo.findByAccountNumber("FROM")).thenReturn(from);
         when(accountRepo.findByAccountNumber("TO")).thenReturn(to);
@@ -433,7 +433,7 @@ class AccountServiceTest {
         User user = new User();
         user.setId(1L);
 
-        Account account = new Account(1L, accountNumber, new BigDecimal("2000.00"), LocalDateTime.now(), user);
+        Account account = new Account(1L, accountNumber, new BigDecimal("2000.00"), LocalDateTime.now(), user,new BigDecimal(3.5));
 
         when(accountRepo.findByAccountNumber(accountNumber)).thenReturn(account);
         when(transactionRepo.findTop5ByFromAccountOrToAccountOrderByTransactionDateDesc(accountNumber, accountNumber))
@@ -518,7 +518,7 @@ class AccountServiceTest {
     public void accountSummary_shouldFailWhenUserNotFound() {
         User user = new User();
         user.setId(101L);
-        Account acc = new Account(1L, testAccountNumber, BigDecimal.valueOf(1000), LocalDateTime.now(), user);
+        Account acc = new Account(1L, testAccountNumber, BigDecimal.valueOf(1000), LocalDateTime.now(), user,new BigDecimal(3.5));
 
         when(accountRepo.findByAccountNumber(testAccountNumber)).thenReturn(acc);
         when(userRepo.findById(101L)).thenReturn(Optional.empty());
@@ -542,8 +542,8 @@ class AccountServiceTest {
 
     @Test
     public void transfer_shouldFailWhenInsufficientBalance() {
-        Account from = new Account(1L, "FROM", new BigDecimal("50.00"), LocalDateTime.now(), new User());
-        Account to = new Account(2L, "TO", new BigDecimal("200.00"), LocalDateTime.now(), new User());
+        Account from = new Account(1L, "FROM", new BigDecimal("50.00"), LocalDateTime.now(), new User(),new BigDecimal(3.5));
+        Account to = new Account(2L, "TO", new BigDecimal("200.00"), LocalDateTime.now(), new User(),new BigDecimal(3.5));
 
         when(accountRepo.findByAccountNumber("FROM")).thenReturn(from);
         when(accountRepo.findByAccountNumber("TO")).thenReturn(to);
@@ -556,7 +556,7 @@ class AccountServiceTest {
 
     @Test
     public void withdraw_shouldFailWhenInsufficientBalance() {
-        Account acc = new Account(1L, testAccountNumber, BigDecimal.valueOf(100), LocalDateTime.now(), new User());
+        Account acc = new Account(1L, testAccountNumber, BigDecimal.valueOf(100), LocalDateTime.now(), new User(),new BigDecimal(3.5));
         when(accountRepo.findByAccountNumber(testAccountNumber)).thenReturn(acc);
 
         IllegalStateException ex = assertThrows(IllegalStateException.class, () ->

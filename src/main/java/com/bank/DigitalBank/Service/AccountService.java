@@ -27,4 +27,6 @@ public interface AccountService {
     ApiResponse<AccountSummaryDTO> getAccountSummary(String accountNumber);
 
     ApiResponse<StatementResponse> getStatement(String accountNumber);
+
+    ApiResponse<AdminDashboardResponse> getAdminDashboard();
 }

@@ -1,5 +1,7 @@
 package com.bank.DigitalBank.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 
@@ -25,12 +27,24 @@ public class AccountDto {
     private Long userId; // Only expose user ID, not the full User object
 
 
-    public AccountDto(Long id, String accountNumber, BigDecimal balance, LocalDateTime createdAt, Long userId) {
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private BigDecimal interestRate;
+
+    public BigDecimal getInterestRate() {
+        return interestRate;
+    }
+
+    public void setInterestRate(BigDecimal interestRate) {
+        this.interestRate = interestRate;
+    }
+
+    public AccountDto(Long id, String accountNumber, BigDecimal balance, LocalDateTime createdAt, Long userId, BigDecimal interestRate) {
         this.id = id;
         this.accountNumber = accountNumber;
         this.balance = balance;
         this.createdAt = createdAt;
         this.userId = userId;
+        this.interestRate = interestRate;
     }
 
     public AccountDto() {
