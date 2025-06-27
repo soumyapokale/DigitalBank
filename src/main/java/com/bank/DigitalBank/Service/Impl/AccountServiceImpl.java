@@ -17,15 +17,21 @@ import com.bank.DigitalBank.Utils.AccountNumGenerator;
 import com.bank.DigitalBank.Utils.GenerateDiscription;
 import com.bank.DigitalBank.dto.*;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -85,7 +91,7 @@ public class AccountServiceImpl implements AccountService {
                 realaccount.getAccountNumber(),   // toAccount
                 TransactionType.DEPOSIT,      // transactionType
                 realaccount.getBalance(),                       // amount
-                null                          // transactionDate (auto-set by @CreationTimestamp)
+                null,realaccount.getBalance()                         // transactionDate (auto-set by @CreationTimestamp)
         );
         transactionRepo.save(transaction);
 ApiResponse accountresponse = new ApiResponse<>(true,"Account registered successfully",accountDto);
@@ -108,13 +114,15 @@ ApiResponse accountresponse = new ApiResponse<>(true,"Account registered success
 
         accountRepo.save(account);
 
+
+
         Transaction transaction = new Transaction(
                 null,                         // id (auto-generated)
                 null,                         // fromAccount
                 account.getAccountNumber(),   // toAccount
                 TransactionType.DEPOSIT,      // transactionType
                 amount,                       // amount
-                null                          // transactionDate (auto-set by @CreationTimestamp)
+                null,newBalance                          // transactionDate (auto-set by @CreationTimestamp)
         );
         transactionRepo.save(transaction);
 
@@ -153,7 +161,7 @@ ApiResponse accountresponse = new ApiResponse<>(true,"Account registered success
                 account.getAccountNumber(),   // toAccount
                 TransactionType.WITHDRAWAL,      // transactionType
                 amount,                       // amount
-                null                          // transactionDate (auto-set by @CreationTimestamp)
+                null,newBalance                          // transactionDate (auto-set by @CreationTimestamp)
         );
         transactionRepo.save(transaction);
 
@@ -204,13 +212,13 @@ ApiResponse accountresponse = new ApiResponse<>(true,"Account registered success
                 null,
                 TransactionType.DEBIT,
                 amount
-                ,LocalDateTime.now()));
+                ,LocalDateTime.now(),fromAccountt.getBalance()));
 
         Transaction forReciever = transactionRepo.save(new Transaction(null,null,
                 toAccountt.getAccountNumber(),
                 TransactionType.CREDIT,
                 amount,
-                LocalDateTime.now()));
+                LocalDateTime.now(),toAccountt.getBalance()));
 TransferResponse transferResponse = new TransferResponse(fromAccount, toAccount, amount);
 
         logger.info("Money Deposited to : "+transferResponse.getToAccount() + " from "+transferResponse.getFromAccount() +" with balance "+amount);
@@ -355,6 +363,32 @@ TransferResponse transferResponse = new TransferResponse(fromAccount, toAccount,
         return response;
     }
 
+    @Override
+    public void toTransactionCSV(String accountNumber, LocalDate fromDate, LocalDate toDate, PrintWriter writer) {
+        Account account = accountRepo.findByAccountNumber(accountNumber);
+        LocalDateTime startDateTime = fromDate != null ? fromDate.atStartOfDay() : LocalDate.MIN.atStartOfDay();
+        LocalDateTime endDateTime = toDate != null ? toDate.atTime(LocalTime.MAX) : LocalDateTime.now();
+
+        List<Transaction> transactions = transactionRepo.findTransactionsForAccountBetweenDates(accountNumber,startDateTime,endDateTime);
+
+        try(CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.EXCEL.withHeader("ID", "Type", "Amount", "BalanceAfter", "Date"))) {
+
+            for (Transaction tx : transactions) {
+                csvPrinter.printRecord(
+                        tx.getId(),
+                        tx.getTransactionType(),
+                        tx.getAmount(),
+                        tx.getSavedBalanceAfterTransaction(),
+
+                        tx.getTransactionDate().toLocalDate()  // formatted date
+                );
+            }
+            csvPrinter.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } ;
+    }
+
     @Scheduled(cron = "0 * * * * *") // every minute for testing
     public void creditDailyInterestToAllAccounts() {
         List<Account> accounts = accountRepo.findAll(); // 🔁 apply to all accounts temporarily
@@ -376,7 +410,9 @@ TransferResponse transferResponse = new TransferResponse(fromAccount, toAccount,
                 transaction.setFromAccount(null);                                   // No source (bank system)
                 transaction.setAmount(dailyInterest);                                    // Calculated interest
                 transaction.setTransactionType(TransactionType.Interest);             // CREDIT type
-                transaction.setTransactionDate(LocalDateTime.now());                // Current timestamp
+                transaction.setTransactionDate(LocalDateTime.now());
+                transaction.setSavedBalanceAfterTransaction(balance.add(dailyInterest));
+                // Current timestamp
 
 
                 transactionRepo.save(transaction);

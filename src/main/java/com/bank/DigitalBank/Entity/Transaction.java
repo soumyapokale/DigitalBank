@@ -36,6 +36,16 @@ public class Transaction {
     @Column(nullable = false)
     private LocalDateTime transactionDate;
 
+    private BigDecimal savedBalanceAfterTransaction;
+
+    public BigDecimal getSavedBalanceAfterTransaction() {
+        return savedBalanceAfterTransaction;
+    }
+
+    public void setSavedBalanceAfterTransaction(BigDecimal savedBalanceAfterTransaction) {
+        this.savedBalanceAfterTransaction = savedBalanceAfterTransaction;
+    }
+
     public Long getId() {
         return id;
     }
@@ -84,14 +94,14 @@ public class Transaction {
         this.transactionDate = transactionDate;
     }
 
-
-    public Transaction(Long id, String fromAccount, String toAccount, TransactionType transactionType, BigDecimal amount, LocalDateTime transactionDate) {
+    public Transaction(Long id, String fromAccount, String toAccount, TransactionType transactionType, BigDecimal amount, LocalDateTime transactionDate, BigDecimal savedBalanceAfterTransaction) {
         this.id = id;
         this.fromAccount = fromAccount;
         this.toAccount = toAccount;
         this.transactionType = transactionType;
         this.amount = amount;
         this.transactionDate = transactionDate;
+        this.savedBalanceAfterTransaction = savedBalanceAfterTransaction;
     }
 
     public Transaction() {

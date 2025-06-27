@@ -6,15 +6,20 @@ import com.bank.DigitalBank.Entity.User;
 import com.bank.DigitalBank.Service.AccountService;
 import com.bank.DigitalBank.Service.UserService;
 import com.bank.DigitalBank.dto.*;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -126,6 +131,18 @@ public class BankController {
         return new ResponseEntity<>(response,HttpStatus.OK);
 
     }
+
+
+    @GetMapping("/accounts/{accountNumber}/transactions/export")
+    public void transactionCSV(@PathVariable String accountNumber,
+                               @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+                               @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+                               HttpServletResponse response) throws IOException {
+        response.setContentType("text/csv");
+        response.setHeader("Content-Disposition", "attachment; filename=\"transactions_" + accountNumber + ".csv\"");
+        accountService.toTransactionCSV(accountNumber, fromDate, toDate, response.getWriter());
+    }
+
 
 
 

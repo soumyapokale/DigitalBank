@@ -1,5 +1,6 @@
 package com.bank.DigitalBank.Repository;
 
+import com.bank.DigitalBank.Entity.Account;
 import com.bank.DigitalBank.Entity.Transaction;
 import com.bank.DigitalBank.Entity.enums.TransactionType;
 import com.bank.DigitalBank.dto.TransactionDTO;
@@ -8,6 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -28,4 +31,18 @@ public interface TransactionRepo extends JpaRepository<Transaction,Long> {
 
 
     long countByTransactionType(TransactionType transactionType);
+
+  //  List<Transaction> findByAccountAndTransactionDateBetween(Account account, LocalDate start, LocalDate end);
+
+    @Query("SELECT t FROM Transaction t " +
+            "WHERE (t.fromAccount = :accountNumber OR t.toAccount = :accountNumber) " +
+            "AND t.transactionDate BETWEEN :start AND :end")
+    List<Transaction> findTransactionsForAccountBetweenDates(
+            @Param("accountNumber") String accountNumber,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
+
+
+
 }

@@ -2,11 +2,12 @@ package com.bank.DigitalBank.Service;
 
 
 import com.bank.DigitalBank.dto.TransferResponse;
-import com.bank.DigitalBank.Entity.Account;
 import com.bank.DigitalBank.dto.*;
 import org.springframework.stereotype.Service;
 
+import java.io.PrintWriter;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -29,4 +30,6 @@ public interface AccountService {
     ApiResponse<StatementResponse> getStatement(String accountNumber);
 
     ApiResponse<AdminDashboardResponse> getAdminDashboard();
+
+    void toTransactionCSV(String accountNumber, LocalDate fromDate, LocalDate toDate, PrintWriter writer);
 }
