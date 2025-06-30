@@ -15,6 +15,7 @@ import com.bank.DigitalBank.Service.AccountService;
 import com.bank.DigitalBank.Service.EmailService;
 import com.bank.DigitalBank.Utils.AccountNumGenerator;
 import com.bank.DigitalBank.Utils.GenerateDiscription;
+import com.bank.DigitalBank.config.ModelMapperConfig;
 import com.bank.DigitalBank.dto.*;
 
 import org.apache.commons.csv.CSVFormat;
@@ -46,6 +47,8 @@ public class AccountServiceImpl implements AccountService {
 
     private TransactionRepo transactionRepo;
 
+
+    private ModelMapperConfig mapper;
     private AccountMapper accountMapper;
     private GenerateDiscription generateDiscription;
 
@@ -54,11 +57,12 @@ public class AccountServiceImpl implements AccountService {
 
 
     private static final Logger logger = LoggerFactory.getLogger(AccountServiceImpl.class);
-    public AccountServiceImpl(AccountRepo accountRepo, UserRepo userRepo, EmailService emailService, TransactionRepo transactionRepo, AccountMapper accountMapper) {
+    public AccountServiceImpl(AccountRepo accountRepo, UserRepo userRepo, EmailService emailService, TransactionRepo transactionRepo, ModelMapperConfig mapper, AccountMapper accountMapper) {
         this.accountRepo = accountRepo;
         this.userRepo = userRepo;
         this.emailService = emailService;
         this.transactionRepo = transactionRepo;
+        this.mapper = mapper;
         this.accountMapper = accountMapper;
 
 
@@ -389,6 +393,22 @@ TransferResponse transferResponse = new TransferResponse(fromAccount, toAccount,
         } ;
     }
 
+    @Override
+    public ApiResponse<List<TransactionDTO>> searchTransactionByTypeAndDate(String accountNumber, TransactionType type, LocalDate from, LocalDate to) {
+
+        LocalDateTime start = from.atStartOfDay();
+        LocalDateTime end = to.atTime(LocalTime.MAX);
+
+        List<Transaction> transactions = transactionRepo.findTransactionsForAccountBetweenDatesOfType(accountNumber,type,start,end);
+
+        List<TransactionDTO> transactionDTOS = transactions.stream().map(x-> mapper.modelMapper().map(x, TransactionDTO.class)).collect(Collectors.toList());
+
+        ApiResponse<List<TransactionDTO>> response = new ApiResponse<>(true,"Fetching Transaction for type "+type+" from "+ from + " to " +to,transactionDTOS);
+
+        return response;
+
+    }
+
     @Scheduled(cron = "0 * * * * *") // every minute for testing
     public void creditDailyInterestToAllAccounts() {
         List<Account> accounts = accountRepo.findAll(); // 🔁 apply to all accounts temporarily
@@ -407,7 +427,7 @@ TransferResponse transferResponse = new TransferResponse(fromAccount, toAccount,
 
                 Transaction transaction = new Transaction();
                 transaction.setToAccount(account.getAccountNumber());               // Account receiving interest
-                transaction.setFromAccount(null);                                   // No source (bank system)
+                transaction.setFromAccount("BOK");                                   // No source (bank system)
                 transaction.setAmount(dailyInterest);                                    // Calculated interest
                 transaction.setTransactionType(TransactionType.Interest);             // CREDIT type
                 transaction.setTransactionDate(LocalDateTime.now());

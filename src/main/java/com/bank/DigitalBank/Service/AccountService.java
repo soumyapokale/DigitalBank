@@ -1,6 +1,7 @@
 package com.bank.DigitalBank.Service;
 
 
+import com.bank.DigitalBank.Entity.enums.TransactionType;
 import com.bank.DigitalBank.dto.TransferResponse;
 import com.bank.DigitalBank.dto.*;
 import org.springframework.stereotype.Service;
@@ -32,4 +33,7 @@ public interface AccountService {
     ApiResponse<AdminDashboardResponse> getAdminDashboard();
 
     void toTransactionCSV(String accountNumber, LocalDate fromDate, LocalDate toDate, PrintWriter writer);
+
+
+    ApiResponse<List<TransactionDTO>> searchTransactionByTypeAndDate(String accountNumber, TransactionType type, LocalDate from, LocalDate to);
 }

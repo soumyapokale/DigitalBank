@@ -7,26 +7,38 @@ import org.hibernate.annotations.CurrentTimestamp;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+
+import com.bank.DigitalBank.Entity.enums.TransactionType;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 public class TransactionDTO {
 
-
     private Long id;
-
-
     private String fromAccount;
-
-
     private String toAccount;
-
-
     private TransactionType transactionType;
-
-
     private BigDecimal amount;
-
-
-
+    private BigDecimal savedBalanceAfterTransaction;
     private LocalDateTime transactionDate;
+
+    // Constructors
+    public TransactionDTO() {
+    }
+
+    public TransactionDTO(Long id, String fromAccount, String toAccount, TransactionType transactionType,
+                          BigDecimal amount, BigDecimal savedBalanceAfterTransaction, LocalDateTime transactionDate) {
+        this.id = id;
+        this.fromAccount = fromAccount;
+        this.toAccount = toAccount;
+        this.transactionType = transactionType;
+        this.amount = amount;
+        this.savedBalanceAfterTransaction = savedBalanceAfterTransaction;
+        this.transactionDate = transactionDate;
+    }
+
+    // Getters and Setters
 
     public Long getId() {
         return id;
@@ -68,23 +80,19 @@ public class TransactionDTO {
         this.amount = amount;
     }
 
+    public BigDecimal getSavedBalanceAfterTransaction() {
+        return savedBalanceAfterTransaction;
+    }
+
+    public void setSavedBalanceAfterTransaction(BigDecimal savedBalanceAfterTransaction) {
+        this.savedBalanceAfterTransaction = savedBalanceAfterTransaction;
+    }
+
     public LocalDateTime getTransactionDate() {
         return transactionDate;
     }
 
     public void setTransactionDate(LocalDateTime transactionDate) {
         this.transactionDate = transactionDate;
-    }
-
-    public TransactionDTO(Long id, String fromAccount, String toAccount, TransactionType transactionType, BigDecimal amount, LocalDateTime transactionDate) {
-        this.id = id;
-        this.fromAccount = fromAccount;
-        this.toAccount = toAccount;
-        this.transactionType = transactionType;
-        this.amount = amount;
-        this.transactionDate = transactionDate;
-    }
-
-    public TransactionDTO() {
     }
 }

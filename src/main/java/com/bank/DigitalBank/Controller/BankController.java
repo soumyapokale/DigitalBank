@@ -3,6 +3,7 @@ package com.bank.DigitalBank.Controller;
 
 import com.bank.DigitalBank.Entity.Account;
 import com.bank.DigitalBank.Entity.User;
+import com.bank.DigitalBank.Entity.enums.TransactionType;
 import com.bank.DigitalBank.Service.AccountService;
 import com.bank.DigitalBank.Service.UserService;
 import com.bank.DigitalBank.dto.*;
@@ -141,6 +142,18 @@ public class BankController {
         response.setContentType("text/csv");
         response.setHeader("Content-Disposition", "attachment; filename=\"transactions_" + accountNumber + ".csv\"");
         accountService.toTransactionCSV(accountNumber, fromDate, toDate, response.getWriter());
+    }
+
+    @GetMapping("accounts/{accountNumber}/transactions/search")
+    public ResponseEntity<ApiResponse<List<TransactionDTO>>> searchTransactionByTypeAndDate(@PathVariable String accountNumber,
+                                                                                            @RequestParam TransactionType type,
+                                                                                            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+                                                                                            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+                                                                                            ){
+
+        ApiResponse<List<TransactionDTO>> response = accountService.searchTransactionByTypeAndDate(accountNumber,type,from,to);
+
+        return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
 
