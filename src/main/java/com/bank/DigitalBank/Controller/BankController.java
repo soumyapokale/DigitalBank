@@ -93,9 +93,9 @@ public class BankController {
 
     @PostMapping("users/login")
 
-    public ResponseEntity<ApiResponse<LoginResponse>> loginUser(@RequestBody @Valid LoginRequest request) throws Exception {
+    public ResponseEntity<ApiResponse<String>> loginUser(@RequestBody @Valid LoginRequest request) throws Exception {
         logger.info("trying to login");
-        ApiResponse<LoginResponse> response = userService.login(request);
+        ApiResponse<String> response = userService.login(request);
         logger.info("Login Success");
         return new ResponseEntity<>(response,HttpStatus.OK);
 
@@ -155,6 +155,8 @@ public class BankController {
 
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
+
+
 
 
 

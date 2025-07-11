@@ -3,14 +3,21 @@ package com.bank.DigitalBank.Service.Impl;
 
 import com.bank.DigitalBank.Entity.User;
 import com.bank.DigitalBank.Repository.UserRepo;
+import com.bank.DigitalBank.Service.CustomUserDetailsService;
 import com.bank.DigitalBank.Service.UserService;
+import com.bank.DigitalBank.Utils.JwtUtil;
 import com.bank.DigitalBank.config.ModelMapperConfig;
 import com.bank.DigitalBank.dto.ApiResponse;
 import com.bank.DigitalBank.dto.LoginRequest;
-import com.bank.DigitalBank.dto.LoginResponse;
 import com.bank.DigitalBank.dto.UserDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +26,15 @@ public class UserServiceImpl implements UserService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepo userRepo;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private CustomUserDetailsService userDetailsService;
 
     private final ModelMapperConfig modelMapperConfig;
     public UserServiceImpl(PasswordEncoder passwordEncoder, UserRepo userRepo, ModelMapperConfig modelMapperConfig) {
@@ -50,27 +66,30 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ApiResponse<LoginResponse> login(LoginRequest request) throws Exception {
-        if (request.getEmail() == null || request.getPassword() == null || request.getPassword().isEmpty()) {
-            throw new Exception("Please enter a valid email and password");
+    public ApiResponse<String> login(LoginRequest request) throws Exception {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+
+            UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
+
+            String token = jwtUtil.generateToken(
+                    userDetails.getUsername(),
+                    userDetails.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "")
+            );
+
+            return new ApiResponse<>(
+                    true,
+                    "Login Successful",
+                    token
+            );
+
+        } catch (BadCredentialsException e) {
+            throw new Exception("Invalid email or password");
         }
-
-        User user = userRepo.findByEmail(request.getEmail());
-        if (user == null) {
-            throw new IllegalArgumentException("User not found with email: " + request.getEmail());
-        }
-
-        // Compare encoded password with raw password
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("Invalid credentials");
-        }
-
-        // Create response DTO
-        LoginResponse loginResponse = new LoginResponse();
-        loginResponse.setId(user.getId());
-        loginResponse.setName(user.getName());
-        loginResponse.setEmail(user.getEmail());
-
-        return new ApiResponse<>(true, "Login successful", loginResponse);
     }
 }
