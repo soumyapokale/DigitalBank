@@ -5,6 +5,7 @@ import com.bank.DigitalBank.Repository.TransactionRepo;
 import com.bank.DigitalBank.Repository.UserRepo;
 import com.bank.DigitalBank.Service.Impl.UserServiceImpl;
 import com.bank.DigitalBank.Utils.JsonUtil;
+import com.bank.DigitalBank.Utils.JwtUtil;
 import com.bank.DigitalBank.config.ModelMapperConfig;
 import com.bank.DigitalBank.dto.ApiResponse;
 import com.bank.DigitalBank.dto.LoginRequest;
@@ -20,6 +21,10 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.IOException;
@@ -27,8 +32,7 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -41,7 +45,13 @@ class UserServiceTest {
     @Mock
     private UserRepo userRepo;
 
+    @Mock
+    private CustomUserDetailsService userDetailsService;
 
+    @Mock
+    private AuthenticationManager authenticationManager;
+@Mock
+    private JwtUtil jwtUtil;
     @Mock
     private TransactionRepo transactionRepo;
     @Mock
@@ -87,27 +97,44 @@ class UserServiceTest {
     }
 
     @Test
-    public void LoginUser() throws Exception {
+    public void LoginUser_ShouldReturnJwtToken_WhenCredentialsAreCorrect() throws Exception {
         // Arrange
         LoginRequest loginRequest = new LoginRequest("soumyapokale@gmail.com", "encryptedpassword");
+
         User user = new User(1L, "soumyapokale", "soumyapokale@gmail.com", "encryptedpassword", "User");
 
-        when(userRepo.findByEmail("soumyapokale@gmail.com")).thenReturn(user);
-        when(passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())).thenReturn(true);
+        // Dummy Spring Security object
+        Authentication authentication = mock(Authentication.class);
+
+        UserDetails userDetails = org.springframework.security.core.userdetails.User
+                .withUsername("soumyapokale@gmail.com")
+                .password("encryptedpassword")
+                .roles("USER")
+                .build();
+
+        // Mock dependencies
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(authentication);
+
+        when(userDetailsService.loadUserByUsername("soumyapokale@gmail.com"))
+                .thenReturn(userDetails);
+
+        when(jwtUtil.generateToken("soumyapokale@gmail.com", "USER"))
+                .thenReturn("dummy-jwt-token");
 
         // Act
-        ApiResponse<LoginResponse> response = userService.login(loginRequest);
+        ApiResponse<String> response = userService.login(loginRequest);
 
         // Assert
         assertTrue(response.isSuccess());
-        assertEquals("soumyapokale@gmail.com", response.getData().getEmail());
-        assertEquals("soumyapokale", response.getData().getName());
-        assertEquals("Login successful", response.getMessage());
+        assertEquals("dummy-jwt-token", response.getData());
 
-        // Optional verifications
-        verify(userRepo).findByEmail("soumyapokale@gmail.com");
-        verify(passwordEncoder).matches("encryptedpassword", "encryptedpassword");
+        // Verifications
+        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        verify(userDetailsService).loadUserByUsername("soumyapokale@gmail.com");
+        verify(jwtUtil).generateToken("soumyapokale@gmail.com", "USER");
     }
+
 
 
 

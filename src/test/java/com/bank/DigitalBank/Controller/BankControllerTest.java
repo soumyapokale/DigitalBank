@@ -1,6 +1,7 @@
 package com.bank.DigitalBank.Controller;
 
 import com.bank.DigitalBank.Entity.enums.TransactionType;
+import com.bank.DigitalBank.Filter.JwtFilter;
 import com.bank.DigitalBank.Service.AccountService;
 import com.bank.DigitalBank.Service.UserService;
 import com.bank.DigitalBank.Utils.JsonUtil;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -30,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(BankController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class BankControllerTest {
 
     @Autowired
@@ -38,6 +41,8 @@ class BankControllerTest {
     @MockBean
     private UserService userService;
 
+    @MockBean
+    private JwtFilter jwtFilter;
     @MockBean
     private AccountService accountService; // ✅ Required for BankController
 
@@ -183,7 +188,7 @@ private LoginRequest loginRequest;
 
         LoginResponse loginResponse = new LoginResponse(1L,"soumyapokale","soumyapokale@gmail.com");
 
-        ApiResponse<LoginResponse> loginresponse= new ApiResponse<>(true,"success",loginResponse);
+        ApiResponse<String> loginresponse= new ApiResponse<>(true,"success","eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyYW1wb2thbGUxMjNAZ21haWwuY29tIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzUxOTk5MDI5LCJleHAiOjE3NTIwODU0Mjl9.EGio--ivwcxA_TInnDzhvsG3JGqxHrJQ1YtSRK50quM");
 
         when(userService.login(any(LoginRequest.class))).thenReturn(loginresponse);
         mockMvc.perform(post("/api/users/login")
@@ -191,7 +196,8 @@ private LoginRequest loginRequest;
                         .content(new ObjectMapper().writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.email").value("soumyapokale@gmail.com"));
+                .andExpect(jsonPath("$.data").value("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyYW1wb2thbGUxMjNAZ21haWwuY29tIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzUxOTk5MDI5LCJleHAiOjE3NTIwODU0Mjl9.EGio--ivwcxA_TInnDzhvsG3JGqxHrJQ1YtSRK50quM"));
+
 
 }
 

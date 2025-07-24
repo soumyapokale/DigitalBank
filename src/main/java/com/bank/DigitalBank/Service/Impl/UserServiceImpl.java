@@ -27,19 +27,25 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepo userRepo;
 
-    @Autowired
+
     private AuthenticationManager authenticationManager;
 
-    @Autowired
+
     private JwtUtil jwtUtil;
 
-    @Autowired
+
+
     private CustomUserDetailsService userDetailsService;
 
+
+
     private final ModelMapperConfig modelMapperConfig;
-    public UserServiceImpl(PasswordEncoder passwordEncoder, UserRepo userRepo, ModelMapperConfig modelMapperConfig) {
+    public UserServiceImpl(PasswordEncoder passwordEncoder, UserRepo userRepo, AuthenticationManager authenticationManager, JwtUtil jwtUtil, CustomUserDetailsService userDetailsService, ModelMapperConfig modelMapperConfig) {
         this.passwordEncoder = passwordEncoder;
         this.userRepo = userRepo;
+        this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
+        this.userDetailsService = userDetailsService;
         this.modelMapperConfig = modelMapperConfig;
     }
 
@@ -67,6 +73,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ApiResponse<String> login(LoginRequest request) throws Exception {
+        if (request == null || request.getEmail() == null || request.getPassword() == null || request.getEmail().isEmpty() || request.getPassword().isEmpty()) {
+            throw new Exception("Please enter a valid email and password");
+        }
+
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -82,14 +92,11 @@ public class UserServiceImpl implements UserService {
                     userDetails.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "")
             );
 
-            return new ApiResponse<>(
-                    true,
-                    "Login Successful",
-                    token
-            );
+            return new ApiResponse<>(true, "Login Successful", token);
 
         } catch (BadCredentialsException e) {
             throw new Exception("Invalid email or password");
         }
     }
+
 }

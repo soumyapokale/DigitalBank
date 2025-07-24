@@ -158,6 +158,13 @@ public class BankController {
 
 
 
+    @GetMapping("/admin/interest-history")
+    public ResponseEntity<ApiResponse<List<InterestResponse>>> getInterestTransactions(){
+
+        ApiResponse<List<InterestResponse>> response= accountService.getInterestTransaction();
+
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
 
 
 

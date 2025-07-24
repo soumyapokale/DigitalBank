@@ -18,7 +18,7 @@ public interface TransactionRepo extends JpaRepository<Transaction,Long> {
 
     List<Transaction> findByFromAccount(String accountNumber);
 
-
+List<Transaction> findByTransactionType(TransactionType interest);
 
     @Query("SELECT t FROM Transaction t WHERE t.toAccount = :accountNumber AND t.transactionType = :type")
     List<Transaction> findByToAccountAndType(@Param("accountNumber") String accountNumber,

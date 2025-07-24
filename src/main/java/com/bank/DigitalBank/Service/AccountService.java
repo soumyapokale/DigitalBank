@@ -36,4 +36,6 @@ public interface AccountService {
 
 
     ApiResponse<List<TransactionDTO>> searchTransactionByTypeAndDate(String accountNumber, TransactionType type, LocalDate from, LocalDate to);
+
+    ApiResponse<List<InterestResponse>> getInterestTransaction();
 }

@@ -409,6 +409,20 @@ TransferResponse transferResponse = new TransferResponse(fromAccount, toAccount,
 
     }
 
+    @Override
+    public ApiResponse<List<InterestResponse>> getInterestTransaction() {
+
+        List<Transaction> t = transactionRepo.findByTransactionType(TransactionType.Interest);
+
+        List<InterestResponse> interestResponses = new ArrayList<>();
+        for(   Transaction tnx: t){
+
+            InterestResponse interestResponse = new InterestResponse(tnx.getToAccount(),tnx.getAmount(),tnx.getTransactionDate());
+            interestResponses.add(interestResponse);
+        }
+        return new ApiResponse<>(true,"success",interestResponses);
+    }
+
     @Scheduled(cron = "0 * * * * *") // every minute for testing
     public void creditDailyInterestToAllAccounts() {
         List<Account> accounts = accountRepo.findAll(); // 🔁 apply to all accounts temporarily

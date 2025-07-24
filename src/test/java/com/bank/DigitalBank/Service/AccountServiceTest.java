@@ -81,7 +81,9 @@ class AccountServiceTest {
                 "1234567890",                 // toAccount
                 TransactionType.DEPOSIT,      // transactionType
                 new BigDecimal("1000.00"),   // amount
-                null                          // transactionDate
+                null,
+                new BigDecimal("2000")// transactionDate
+
         );
         User user = new User();
         user.setId(validAccount.getUserId());
@@ -201,7 +203,7 @@ class AccountServiceTest {
                 toAccountNumber,
                 TransactionType.DEBIT,
                 transferAmount,
-                LocalDateTime.now()
+                LocalDateTime.now(),new BigDecimal("2000")
         );
         Transaction testCredit = new Transaction(
                 null,
@@ -209,7 +211,7 @@ class AccountServiceTest {
                 toAccountNumber,
                 TransactionType.CREDIT,
                 transferAmount,
-                LocalDateTime.now()
+                LocalDateTime.now(),new BigDecimal("2000")
         );
 
 
@@ -307,10 +309,10 @@ class AccountServiceTest {
 
     public static List<Transaction> getTransactionListtoAccount() {
         return Arrays.asList(
-                new Transaction(1L, "ACC123", "SBI123456789", TransactionType.CREDIT, new BigDecimal("1500.00"), LocalDateTime.now().minusDays(1)),
-                new Transaction(2L, null, "SBI123456789", TransactionType.DEPOSIT, new BigDecimal("500.00"), LocalDateTime.now().minusDays(2)),
-                new Transaction(3L, "ACC789", "null", TransactionType.WITHDRAWAL, new BigDecimal("300.00"), LocalDateTime.now().minusDays(3)),
-                new Transaction(4L, "ACC456", "SBI123456789", TransactionType.DEBIT, new BigDecimal("750.00"), LocalDateTime.now())
+                new Transaction(1L, "ACC123", "SBI123456789", TransactionType.CREDIT, new BigDecimal("1500.00"), LocalDateTime.now().minusDays(1),new BigDecimal("2000")),
+                new Transaction(2L, null, "SBI123456789", TransactionType.DEPOSIT, new BigDecimal("500.00"), LocalDateTime.now().minusDays(2),new BigDecimal("2000")),
+                new Transaction(3L, "ACC789", "null", TransactionType.WITHDRAWAL, new BigDecimal("300.00"), LocalDateTime.now().minusDays(3),new BigDecimal("2000")),
+                new Transaction(4L, "ACC456", "SBI123456789", TransactionType.DEBIT, new BigDecimal("750.00"), LocalDateTime.now(),new BigDecimal("2000"))
         );
     }
 
@@ -319,13 +321,13 @@ class AccountServiceTest {
         String accountNumber = "SBI123456789";
 
         List<Transaction> toTransactions = Arrays.asList(
-                new Transaction(1L, "ACC123", "SBI123456789", TransactionType.DEBIT, new BigDecimal("1500.00"), LocalDateTime.now().minusDays(1)),
-                new Transaction(2L, null, "SBI123456789", TransactionType.DEPOSIT, new BigDecimal("500.00"), LocalDateTime.now().minusDays(2)),
-                new Transaction(4L, "ACC456", "SBI123456789", TransactionType.CREDIT, new BigDecimal("750.00"), LocalDateTime.now())
+                new Transaction(1L, "ACC123", "SBI123456789", TransactionType.DEBIT, new BigDecimal("1500.00"), LocalDateTime.now().minusDays(1),new BigDecimal("2000")),
+                new Transaction(2L, null, "SBI123456789", TransactionType.DEPOSIT, new BigDecimal("500.00"), LocalDateTime.now().minusDays(2),new BigDecimal("2000")),
+                new Transaction(4L, "ACC456", "SBI123456789", TransactionType.CREDIT, new BigDecimal("750.00"), LocalDateTime.now(),new BigDecimal("2000"))
         );
 
         List<Transaction> fromTransactions = Arrays.asList(
-                new Transaction(3L, "SBI123456789", "ACC999", TransactionType.WITHDRAWAL, new BigDecimal("300.00"), LocalDateTime.now().minusDays(3))
+                new Transaction(3L, "SBI123456789", "ACC999", TransactionType.WITHDRAWAL, new BigDecimal("300.00"), LocalDateTime.now().minusDays(3),new BigDecimal("2000"))
         );
 
         when(transactionRepo.findByToAccount(accountNumber)).thenReturn(toTransactions);
@@ -353,7 +355,7 @@ class AccountServiceTest {
                 accountNumber,
                 TransactionType.DEPOSIT,
                 new BigDecimal("1000.00"),
-                LocalDateTime.now().minusDays(1)
+                LocalDateTime.now().minusDays(1),new BigDecimal("2000")
         );
 
         Transaction t2 = new Transaction(
@@ -362,7 +364,7 @@ class AccountServiceTest {
                 null,
                 TransactionType.WITHDRAWAL,
                 new BigDecimal("1000.00"),
-                LocalDateTime.now().minusDays(1)
+                LocalDateTime.now().minusDays(1),new BigDecimal("2000")
         );
 
         Transaction t3 = new Transaction(
@@ -371,7 +373,7 @@ class AccountServiceTest {
                 accountNumber,
                 TransactionType.CREDIT,
                 new BigDecimal("750.00"),
-                LocalDateTime.now()
+                LocalDateTime.now(),new BigDecimal("2000")
         );
 
         Transaction t4 = new Transaction(
@@ -380,7 +382,7 @@ class AccountServiceTest {
                 accountNumber,
                 TransactionType.DEBIT,
                 new BigDecimal("750.00"),
-                LocalDateTime.now()
+                LocalDateTime.now(),new BigDecimal("2000")
         );
 
         User testUser = new User();
@@ -570,11 +572,11 @@ class AccountServiceTest {
 
     public static List<Transaction> getTop5Transactions(String accountNumber) {
         return Arrays.asList(
-                new Transaction(1L, accountNumber, null, TransactionType.DEBIT, new BigDecimal("100.00"), LocalDateTime.now().minusDays(1)),
-                new Transaction(2L, null, accountNumber, TransactionType.CREDIT, new BigDecimal("200.00"), LocalDateTime.now().minusDays(2)),
-                new Transaction(3L, accountNumber, null, TransactionType.DEBIT, new BigDecimal("150.00"), LocalDateTime.now().minusDays(3)),
-                new Transaction(4L, null, accountNumber, TransactionType.DEPOSIT, new BigDecimal("500.00"), LocalDateTime.now().minusDays(4)),
-                new Transaction(5L, accountNumber, null, TransactionType.WITHDRAWAL, new BigDecimal("300.00"), LocalDateTime.now().minusDays(5))
+                new Transaction(1L, accountNumber, null, TransactionType.DEBIT, new BigDecimal("100.00"), LocalDateTime.now().minusDays(1),new BigDecimal("2000")),
+                new Transaction(2L, null, accountNumber, TransactionType.CREDIT, new BigDecimal("200.00"), LocalDateTime.now().minusDays(2),new BigDecimal("2000")),
+                new Transaction(3L, accountNumber, null, TransactionType.DEBIT, new BigDecimal("150.00"), LocalDateTime.now().minusDays(3),new BigDecimal("2000")),
+                new Transaction(4L, null, accountNumber, TransactionType.DEPOSIT, new BigDecimal("500.00"), LocalDateTime.now().minusDays(4),new BigDecimal("2000")),
+                new Transaction(5L, accountNumber, null, TransactionType.WITHDRAWAL, new BigDecimal("300.00"), LocalDateTime.now().minusDays(5),new BigDecimal("2000"))
         );
     }
 
