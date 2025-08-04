@@ -22,6 +22,10 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +40,8 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.apache.commons.lang3.math.NumberUtils.min;
 
 @Transactional
 @Service
@@ -251,7 +257,7 @@ TransferResponse transferResponse = new TransferResponse(fromAccount, toAccount,
     }
 
     @Override
-    public ApiResponse<List<TrasactionResponse>> getTransactionHistory(String accountNumber) {
+    public ApiResponse<Page<TrasactionResponse>> getTransactionHistory(String accountNumber, int size, int page) {
         List<Transaction> responseListTo = transactionRepo.findByToAccount(accountNumber);
 
         List<Transaction> responseListFrom = transactionRepo.findByFromAccount(accountNumber);
@@ -267,7 +273,13 @@ TransferResponse transferResponse = new TransferResponse(fromAccount, toAccount,
                 ))
                 .sorted(Comparator.comparing(TrasactionResponse::getTransactionDate).reversed()).collect(Collectors.toList());
 
-        ApiResponse<List<TrasactionResponse>> apiresponse = new ApiResponse<>(true,"Transaction list fetched",responseList);
+        Pageable pageable = PageRequest.of(page, size);
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start+pageable.getPageSize(), responseList.size());
+        List<TrasactionResponse> pageContent = responseList.subList(start, end);
+        Page<TrasactionResponse> response = new PageImpl<>(pageContent,pageable, responseList.size());
+        ApiResponse<Page<TrasactionResponse>> apiresponse = new ApiResponse<>(true,"Transaction list fetched",response);
         return apiresponse;
 
     }

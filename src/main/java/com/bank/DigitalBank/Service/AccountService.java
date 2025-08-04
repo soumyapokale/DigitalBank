@@ -4,6 +4,7 @@ package com.bank.DigitalBank.Service;
 import com.bank.DigitalBank.Entity.enums.TransactionType;
 import com.bank.DigitalBank.dto.TransferResponse;
 import com.bank.DigitalBank.dto.*;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.io.PrintWriter;
@@ -24,7 +25,7 @@ public interface AccountService {
 
     ApiResponse<BalanceDTO> getBalance(String accountNumber);
 
-    ApiResponse<List<TrasactionResponse>> getTransactionHistory(String accountNumber);
+    ApiResponse<Page<TrasactionResponse>> getTransactionHistory(String accountNumber, int size, int page);
 
     ApiResponse<AccountSummaryDTO> getAccountSummary(String accountNumber);
 

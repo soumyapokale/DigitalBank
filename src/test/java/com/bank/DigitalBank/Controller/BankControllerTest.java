@@ -10,7 +10,6 @@ import com.bank.DigitalBank.dto.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -236,7 +235,7 @@ private LoginRequest loginRequest;
 
         ApiResponse<List<TrasactionResponse>> apiResponse= new ApiResponse<>(true,"SUCCESS",response);
 
-        when(accountService.getTransactionHistory(accountNumber)).thenReturn(apiResponse);
+        when(accountService.getTransactionHistory(accountNumber, size, page)).thenReturn(apiResponse);
 
         mockMvc.perform(get("/api/users/transaction/{accountNumber}", accountNumber)
                         .contentType(MediaType.APPLICATION_JSON))

@@ -12,6 +12,9 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -102,8 +105,9 @@ public class BankController {
     }
 
     @GetMapping("users/transaction/{accountNumber}")
-    public ResponseEntity<ApiResponse<List<TrasactionResponse>>> getAccountTransactionHistory(@Valid @PathVariable String accountNumber){
-        ApiResponse<List<TrasactionResponse>> response = accountService.getTransactionHistory(accountNumber);
+    public ResponseEntity<ApiResponse<Page<TrasactionResponse>>> getAccountTransactionHistory(@Valid @PathVariable String accountNumber, @RequestParam("page") int page,
+                                                                                                @RequestParam("size") int size){
+        ApiResponse<Page<TrasactionResponse>> response = accountService.getTransactionHistory(accountNumber,size,page);
         logger.info("Fetching transaction history");
         return new ResponseEntity<>(response,HttpStatus.OK);
     }

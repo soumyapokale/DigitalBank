@@ -1,91 +1,217 @@
-# DigitalBank
+# 🏦 DigitalBank API
 
-# 💳 Digital Banking System
+A secure digital banking REST API built using Spring Boot. It supports user and account management, transactions, interest tracking, and more. Includes JWT-based authentication, pagination, and rate limiting via Bucket4j.
 
-A secure and scalable **Digital Banking API** built with Spring Boot. It enables basic banking operations such as account creation, deposits, withdrawals, transfers, and balance checking — all through RESTful APIs.
+---
+
+## 📌 Features
+
+- ✅ User Registration & Login (with JWT)
+- ✅ Account Creation
+- ✅ Deposit / Withdrawal / Transfer
+- ✅ Balance Check
+- ✅ Mini Statement (Last 5 Transactions)
+- ✅ Account Summary
+- ✅ CSV Export of Transactions
+- ✅ Search Transactions by Type and Date
+- ✅ Admin Dashboard
+- ✅ Interest Calculation History
+- ✅ **Pagination Support** (for transactions)
+- ✅ **Rate Limiting** (100 requests per hour per user)
+
+---
+
+## 🚀 Getting Started
+
+### ✅ Prerequisites
+
+- Java 17+
+- Maven or Gradle
+- PostgreSQL or any SQL database
+- Postman or Swagger UI
+- (Optional) Docker
+
+---
+
+## 🔐 Authentication
+
+### 🔒 Login
+
+```
+POST /api/users/login
+```
+
+**Request Body**
+```json
+{
+  "email": "user@example.com",
+  "password": "password"
+}
+```
+
+**Response**
+```json
+{
+  "status": "success",
+  "data": "<JWT_TOKEN>"
+}
+```
+
+> 🔑 Use the JWT in `Authorization: Bearer <token>` for all protected endpoints.
+
+---
+
+## 👤 User & Account
+
+### ✅ Register User
+
+```
+POST /api/users/register
+```
+
+### ✅ Create Account
+
+```
+POST /api/accounts/create
+```
+
+---
+
+## 💵 Transactions
+
+### Deposit
+
+```
+POST /api/accounts/deposit
+```
+
+### Withdraw
+
+```
+POST /api/accounts/withdraw
+```
+
+### Transfer
+
+```
+POST /api/accounts/transfer
+```
+
+---
+
+## 📜 Mini Statement
+
+```
+GET /api/accounts/{accountNumber}/mini-statement
+```
+
+---
+
+## 📂 Export Transactions (CSV)
+
+```
+GET /api/accounts/{accountNumber}/transactions/export
+```
+
+Optional query parameters:
+
+- `fromDate` – e.g., `2025-01-01`
+- `toDate` – e.g., `2025-08-01`
+
+---
+
+## 📊 Paginated Transaction History
+
+```
+GET /api/users/transaction/{accountNumber}?page=0&size=10
+```
+
+---
+
+## 🔎 Search Transactions
+
+```
+GET /api/accounts/{accountNumber}/transactions/search
+```
+
+**Query Parameters**
+- `type`: `DEPOSIT`, `WITHDRAW`, `TRANSFER`
+- `from`: Date (ISO)
+- `to`: Date (ISO)
+
+---
+
+## 📈 Admin Dashboard
+
+```
+GET /api/admin/dashboard
+```
+
+---
+
+## 💸 Interest Transaction History
+
+```
+GET /api/admin/interest-history
+```
+
+---
+
+## 🛡️ Rate Limiting (via Bucket4j)
+
+- Each authenticated user is allowed **100 transaction-related requests per hour**.
+- On exceeding the limit, response code: `429 Too Many Requests`.
+
+```json
+{
+  "message": "🚫 Rate limit exceeded. Try again later."
+}
+```
 
 ---
 
 ## 🔧 Technologies Used
 
-- Java 17+
 - Spring Boot
-- Spring Data JPA
-- Spring Validation
-- Hibernate
-- MySQL / H2 (for dev/test)
-- Lombok
-- Swagger / Springdoc OpenAPI
-- SLF4J (logging)
-- Gradle / Maven
+- Spring Security + JWT
+- Hibernate + JPA
+- Bucket4j (rate limiting)
+- PostgreSQL / MySQL
+- Swagger (OpenAPI 3)
+- JUnit + Mockito
 
 ---
 
-## 🚀 How to Run Locally
+## 🧪 Testing
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/your-username/digital-banking.git
-   cd digital-banking
-Configure the database
-Open src/main/resources/application.properties and set:
+Tests are located under:
 
-properties
+```
+/src/test/java/com/bank/DigitalBank/
+```
 
-spring.datasource.url=jdbc:mysql://localhost:3306/digitalbank
-spring.datasource.username=your_db_user
-spring.datasource.password=your_db_password
-Run the application
+Run tests using:
+```bash
+./gradlew test
+# or
+mvn test
+```
 
-If using Gradle:
+---
 
-bash
-./gradlew bootRun
-Or if using Maven:
+## 📦 Future Improvements
 
-bash
-./mvnw spring-boot:run
-Access Swagger API docs
+- ✅ Docker & Docker Compose
+- ⬜ Kafka for Transaction Logs
+- ⬜ Role-based Access Control (RBAC)
+- ⬜ Frontend dashboard (React/Vue)
 
-bash
-http://localhost:8080/swagger-ui.html
-✅ Features Implemented
-👤 User Registration
+---
 
-🏦 Bank Account Creation
+## 🧑‍💻 Author
 
-💰 Deposit Cash
+**Soumya Pokale**
 
-💸 Withdraw Funds
-
-🔁 Transfer Between Accounts
-
-📊 Check Account Balance
-
-✅ Request Validation with @Valid
-
-❗ Centralized Exception Handling
-
-📄 Interactive API Docs (Swagger)
-
-🧪 How to Run Unit Tests
-▶️ Using IntelliJ IDEA
-Right-click on the test directory or any test class.
-
-Select "Run 'All Tests'" or "Run <TestClass>".
-
-You will see results in the Run/Test window.
-
-👨‍💻 Author
-Soumya
-📧 soumyapokale41@gmail.com
-
-
-✨ Contributions, issues, and suggestions are welcome! ✨
-
-
-Let me know if you'd like me to:
-- Add badges (build status, license, etc.)
-- Include example request/response JSON
-- Document API endpoints in the README
-- Add a Docker section if you're planning containerization.
+📧 `soumyapokale@gmail.com`  
+🔗 [LinkedIn](https://www.linkedin.com/in/soumyapokale)  
+💼 [GitHub](https://github.com/soumyapokale)

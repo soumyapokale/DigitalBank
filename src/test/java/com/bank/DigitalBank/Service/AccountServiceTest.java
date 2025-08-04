@@ -12,8 +12,6 @@ import com.bank.DigitalBank.Service.Impl.AccountServiceImpl;
 import com.bank.DigitalBank.Utils.GenerateDiscription;
 import com.bank.DigitalBank.Utils.JsonUtil;
 import com.bank.DigitalBank.dto.*;
-import jakarta.validation.constraints.AssertTrue;
-import org.apiguardian.api.API;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -333,7 +331,7 @@ class AccountServiceTest {
         when(transactionRepo.findByToAccount(accountNumber)).thenReturn(toTransactions);
         when(transactionRepo.findByFromAccount(accountNumber)).thenReturn(fromTransactions);
 
-        ApiResponse<List<TrasactionResponse>> response = accountService.getTransactionHistory(accountNumber);
+        ApiResponse<List<TrasactionResponse>> response = accountService.getTransactionHistory(accountNumber, size, page);
 
         assertTrue(response.isSuccess());
         assertEquals(4, response.getData().size());
@@ -474,7 +472,7 @@ class AccountServiceTest {
         when(transactionRepo.findByToAccount(testAccountNumber)).thenReturn(Collections.emptyList());
         when(transactionRepo.findByFromAccount(testAccountNumber)).thenReturn(Collections.emptyList());
 
-        ApiResponse<List<TrasactionResponse>> response = accountService.getTransactionHistory(testAccountNumber);
+        ApiResponse<List<TrasactionResponse>> response = accountService.getTransactionHistory(testAccountNumber, size, page);
 
         assertTrue(response.isSuccess());
         assertNotNull(response.getData());
