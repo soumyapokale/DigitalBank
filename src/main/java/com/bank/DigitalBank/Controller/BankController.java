@@ -5,12 +5,15 @@ import com.bank.DigitalBank.Entity.Account;
 import com.bank.DigitalBank.Entity.User;
 import com.bank.DigitalBank.Entity.enums.TransactionType;
 import com.bank.DigitalBank.Service.AccountService;
+import com.bank.DigitalBank.Service.FileStorageService;
 import com.bank.DigitalBank.Service.UserService;
 import com.bank.DigitalBank.dto.*;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +24,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -34,10 +38,13 @@ public class BankController {
 
     private AccountService accountService;
 
+    private FileStorageService fileStorageService;
+
     private static final Logger logger = LoggerFactory.getLogger(BankController.class);
-    public BankController(UserService userService, AccountService accountService) {
+    public BankController(UserService userService, AccountService accountService, FileStorageService fileStorageService) {
         this.userService = userService;
         this.accountService = accountService;
+        this.fileStorageService = fileStorageService;
     }
 
     @PostMapping(value="/users/register",produces = MediaType.APPLICATION_JSON_VALUE)
@@ -169,6 +176,26 @@ public class BankController {
 
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
+
+    @GetMapping("/accounts/dollarbalance/{accountNumber}")
+    public ResponseEntity<ApiResponse<BalanceDTO>> getDollarBalance(@PathVariable String accountNumber){
+        logger.info("Fetching Balance");
+        ApiResponse<BalanceDTO> account = accountService.getDollarBalance(accountNumber);
+        logger.info("Balance is "+ account.getData().getBalance());
+        return new ResponseEntity<>(account,HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/upload",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<com.bank.DigitalBank.entity.UploadedFile> uploadFile(@RequestParam("file") MultipartFile file) {
+        com.bank.DigitalBank.entity.UploadedFile uploadedFile = fileStorageService.storeFile(file);
+        return ResponseEntity.ok(uploadedFile);
+    }
+
+    @GetMapping("/download/{fileName}")
+    public ResponseEntity<InputStreamResource> downloadFileByName(@PathVariable String fileName) throws IOException {
+        return fileStorageService.downloadFileByName(fileName);
+    }
+
 
 
 

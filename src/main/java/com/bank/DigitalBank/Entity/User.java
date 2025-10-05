@@ -36,6 +36,26 @@ public class User {
     @Column(name = "roles", columnDefinition = "varchar(255) default 'USER'")
     private String roles;
 
+    @Column(unique = true)
+    private String vpa;
+
+    public String getVpa() {
+        return vpa;
+    }
+
+    public void setVpa(String vpa) {
+        this.vpa = vpa;
+    }
+
+    public User(Long id, String name, String email, String password, String roles, String vpa) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.roles = roles;
+        this.vpa = vpa;
+    }
+
     public Long getId() {
         return id;
     }

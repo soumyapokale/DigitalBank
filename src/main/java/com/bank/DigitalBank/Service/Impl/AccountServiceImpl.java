@@ -15,20 +15,26 @@ import com.bank.DigitalBank.Service.AccountService;
 import com.bank.DigitalBank.Service.EmailService;
 import com.bank.DigitalBank.Utils.AccountNumGenerator;
 import com.bank.DigitalBank.Utils.GenerateDiscription;
+import com.bank.DigitalBank.config.AppConfig;
 import com.bank.DigitalBank.config.ModelMapperConfig;
 import com.bank.DigitalBank.dto.*;
 
+import com.bank.DigitalBank.dto.currencyClient.CurrencyRequest;
+import com.bank.DigitalBank.dto.currencyClient.CurrencyResponse;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -53,10 +59,15 @@ public class AccountServiceImpl implements AccountService {
 
     private TransactionRepo transactionRepo;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
+
 
     private ModelMapperConfig mapper;
     private AccountMapper accountMapper;
     private GenerateDiscription generateDiscription;
+
 
 
     private static final BigDecimal INTEREST_RATE = new BigDecimal("3.5");
@@ -433,6 +444,53 @@ TransferResponse transferResponse = new TransferResponse(fromAccount, toAccount,
             interestResponses.add(interestResponse);
         }
         return new ApiResponse<>(true,"success",interestResponses);
+    }
+
+    @Override
+    public ApiResponse<BalanceDTO> getDollarBalance(String accountNumber) {
+
+        Account account = accountRepo.findByAccountNumber(accountNumber);
+        if (account == null) {
+            throw new IllegalArgumentException("Account not found with number: " + accountNumber);
+        }
+
+        BalanceDTO savedbalance = new BalanceDTO();
+        BigDecimal balance = account.getBalance();
+
+
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        CurrencyRequest currencyRequest = new CurrencyRequest();
+        currencyRequest.setFromCurrency("INR");
+        currencyRequest.setToCurrency("USD");
+        currencyRequest.setAmount(balance.doubleValue());
+
+        HttpEntity<CurrencyRequest> request = new HttpEntity<>(currencyRequest, headers);
+
+        String url = "http://localhost:9090/utility/currency/convert";
+        ResponseEntity<CurrencyResponse> response = restTemplate.exchange(url, HttpMethod.POST,request, CurrencyResponse.class);
+
+        System.out.println("Response: " + response);
+
+
+        logger.info("amount in dollars is"+response.getBody());
+
+
+
+        savedbalance.setBalance(
+                BigDecimal
+                        .valueOf(response.getBody().getConvertedAmount())
+                        .setScale(5, RoundingMode.HALF_UP)
+        );
+
+        savedbalance.setAccountNumber(account.getAccountNumber());
+
+        logger.info("Balance for "+accountNumber +"is " + savedbalance.getBalance());
+
+        return new ApiResponse<>(true,"balance is "+account.getBalance(),savedbalance);
+
     }
 
     @Scheduled(cron = "0 * * * * *") // every minute for testing

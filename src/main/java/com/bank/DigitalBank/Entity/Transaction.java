@@ -38,6 +38,37 @@ public class Transaction {
 
     private BigDecimal savedBalanceAfterTransaction;
 
+    private String senderVpa;
+    private String receiverVpa;
+
+    public String getSenderVpa() {
+        return senderVpa;
+    }
+
+    public void setSenderVpa(String senderVpa) {
+        this.senderVpa = senderVpa;
+    }
+
+    public String getReceiverVpa() {
+        return receiverVpa;
+    }
+
+    public void setReceiverVpa(String receiverVpa) {
+        this.receiverVpa = receiverVpa;
+    }
+
+    public Transaction(Long id, String fromAccount, String toAccount, TransactionType transactionType, BigDecimal amount, LocalDateTime transactionDate, BigDecimal savedBalanceAfterTransaction, String senderVpa, String receiverVpa) {
+        this.id = id;
+        this.fromAccount = fromAccount;
+        this.toAccount = toAccount;
+        this.transactionType = transactionType;
+        this.amount = amount;
+        this.transactionDate = transactionDate;
+        this.savedBalanceAfterTransaction = savedBalanceAfterTransaction;
+        this.senderVpa = senderVpa;
+        this.receiverVpa = receiverVpa;
+    }
+
     public BigDecimal getSavedBalanceAfterTransaction() {
         return savedBalanceAfterTransaction;
     }

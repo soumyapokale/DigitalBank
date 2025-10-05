@@ -2,6 +2,7 @@ package com.bank.DigitalBank.Service.Impl;
 
 
 import com.bank.DigitalBank.Entity.User;
+import com.bank.DigitalBank.Repository.TransactionRepo;
 import com.bank.DigitalBank.Repository.UserRepo;
 import com.bank.DigitalBank.Service.CustomUserDetailsService;
 import com.bank.DigitalBank.Service.UserService;
@@ -37,15 +38,18 @@ public class UserServiceImpl implements UserService {
 
     private CustomUserDetailsService userDetailsService;
 
+    private TransactionRepo transactionRepo;
+
 
 
     private final ModelMapperConfig modelMapperConfig;
-    public UserServiceImpl(PasswordEncoder passwordEncoder, UserRepo userRepo, AuthenticationManager authenticationManager, JwtUtil jwtUtil, CustomUserDetailsService userDetailsService, ModelMapperConfig modelMapperConfig) {
+    public UserServiceImpl(PasswordEncoder passwordEncoder, UserRepo userRepo, AuthenticationManager authenticationManager, JwtUtil jwtUtil, CustomUserDetailsService userDetailsService, TransactionRepo transactionRepo, ModelMapperConfig modelMapperConfig) {
         this.passwordEncoder = passwordEncoder;
         this.userRepo = userRepo;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
+        this.transactionRepo = transactionRepo;
         this.modelMapperConfig = modelMapperConfig;
     }
 
@@ -58,6 +62,14 @@ public class UserServiceImpl implements UserService {
         if (user.getRoles() == null || user.getRoles().isEmpty()) {
             user.setRoles("USER");
         }
+
+        String vpa = user.getName()+Math.random()+"@digitalbank";
+
+        while(userRepo.existsByVpa(vpa)){
+            vpa = user.getName()+Math.random()+"@digitalbank";
+        }
+
+        user.setVpa(vpa);
 
         logger.info("Encoding Password");
         user.setPassword(passwordEncoder.encode(user.getPassword()));
