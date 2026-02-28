@@ -112,8 +112,8 @@ public class BankController {
     }
 
     @GetMapping("users/transaction/{accountNumber}")
-    public ResponseEntity<ApiResponse<Page<TrasactionResponse>>> getAccountTransactionHistory(@Valid @PathVariable String accountNumber, @RequestParam("page") int page,
-                                                                                                @RequestParam("size") int size){
+    public ResponseEntity<ApiResponse<Page<TrasactionResponse>>> getAccountTransactionHistory(@Valid @PathVariable String accountNumber, @RequestParam(value="page",defaultValue = "1") int page,
+                                                                                                @RequestParam(value = "size",defaultValue = "5") int size){
         ApiResponse<Page<TrasactionResponse>> response = accountService.getTransactionHistory(accountNumber,size,page);
         logger.info("Fetching transaction history");
         return new ResponseEntity<>(response,HttpStatus.OK);

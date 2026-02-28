@@ -20,7 +20,6 @@ spring:
       platform: mysql
 
 
-
 ## Use a different port if needed to isolate test environment
 #server:
 #  port: 8081

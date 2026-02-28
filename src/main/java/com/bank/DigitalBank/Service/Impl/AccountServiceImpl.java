@@ -7,6 +7,7 @@ import com.bank.DigitalBank.Entity.Account;
 import com.bank.DigitalBank.Entity.Transaction;
 import com.bank.DigitalBank.Entity.User;
 import com.bank.DigitalBank.Entity.enums.TransactionType;
+import com.bank.DigitalBank.KAFKA.TransactionEvent;
 import com.bank.DigitalBank.Mapper.AccountMapper;
 import com.bank.DigitalBank.Repository.AccountRepo;
 import com.bank.DigitalBank.Repository.TransactionRepo;
@@ -31,6 +32,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,6 +59,8 @@ public class AccountServiceImpl implements AccountService {
     private UserRepo userRepo;
     private final EmailService emailService;
 
+    @Autowired
+    private KafkaTemplate<String, TransactionEvent> kafkaTemplate;
     private TransactionRepo transactionRepo;
 
     @Autowired
@@ -242,6 +246,17 @@ ApiResponse accountresponse = new ApiResponse<>(true,"Account registered success
                 LocalDateTime.now(),toAccountt.getBalance()));
 TransferResponse transferResponse = new TransferResponse(fromAccount, toAccount, amount);
 
+        TransactionEvent event = new TransactionEvent(
+                UUID.randomUUID().toString(),
+                fromAccount,
+                toAccount,
+                amount,
+                "TRANSFER",
+                LocalDateTime.now()
+        );
+
+        kafkaTemplate.send("transfer-topic", event);
+        logger.info("Transfer event published to Kafka for {}", event.getTransactionId());
         logger.info("Money Deposited to : "+transferResponse.getToAccount() + " from "+transferResponse.getFromAccount() +" with balance "+amount);
         User receiverUser = toAccountt.getUser();
         User sender = fromAccountt.getUser();
@@ -518,7 +533,17 @@ TransferResponse transferResponse = new TransferResponse(fromAccount, toAccount,
                 transaction.setSavedBalanceAfterTransaction(balance.add(dailyInterest));
                 // Current timestamp
 
+                TransactionEvent event = new TransactionEvent(
+                        UUID.randomUUID().toString(),
+                        "BOK intrest",
+                        account.getAccountNumber(),
+                        dailyInterest,
+                        "TRANSFER",
+                        LocalDateTime.now()
+                );
 
+                kafkaTemplate.send("transfer-topic", event);
+                logger.info("Transfer event published to Kafka for {}", event.getTransactionId());
                 transactionRepo.save(transaction);
                 accountRepo.save(account);
             }
